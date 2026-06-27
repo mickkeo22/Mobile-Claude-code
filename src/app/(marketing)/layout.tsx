@@ -147,10 +147,10 @@ export default function MarketingLayout({
           <div className="mt-12 flex flex-col items-start justify-between gap-4 border-t border-border pt-8 text-sm text-muted-foreground sm:flex-row sm:items-center">
             <p>© {new Date().getFullYear()} Aether, Inc. All rights reserved.</p>
             <div className="flex flex-wrap items-center gap-x-6 gap-y-2">
-              <Link href="/contact" className="hover:text-foreground">
+              <Link href="/legal/privacy" className="hover:text-foreground">
                 Privacy
               </Link>
-              <Link href="/contact" className="hover:text-foreground">
+              <Link href="/legal/terms" className="hover:text-foreground">
                 Terms
               </Link>
               <Link href="/contact" className="hover:text-foreground">
