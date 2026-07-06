@@ -1,0 +1,140 @@
+# ──────────────────────────────────────────────────────────────────
+# Discovery framework — CORE (industry-agnostic, always active)
+#
+# Edit freely. Restart the app to pick up changes — no code edits.
+#
+# Each area:
+#   id            — stable key used by the engine and UI
+#   label         — short name shown on the coverage pill
+#   why_it_matters— one line, shown as pill tooltip + sent to the model
+#   probe_questions — questions Mick can ask (the model may adapt them)
+#   depth_signals — what information means this area is "covered"
+# ──────────────────────────────────────────────────────────────────
+areas:
+  - id: money_in
+    label: "Money In"
+    why_it_matters: "How revenue actually arrives — invoicing, collection, and chasing late payers — is usually the fastest place to find leaks."
+    probe_questions:
+      - "Walk me through what happens after you finish a job or make a sale — how does the invoice get out the door?"
+      - "How long after the work is done does the customer actually get billed?"
+      - "Who chases late payments, and what does that look like?"
+      - "Do you take deposits up front? How do you collect them?"
+      - "How do customers pay you today — card, check, cash, bank transfer?"
+    depth_signals:
+      - "Who creates invoices and with what tool"
+      - "Typical delay between work done and invoice sent"
+      - "How late payments are followed up (or not)"
+      - "Whether deposits/prepayments are taken and how"
+      - "Payment methods accepted and any friction collecting"
+
+  - id: books
+    label: "Books"
+    why_it_matters: "Bookkeeping hygiene decides whether the owner can trust any number in the business — and whether reporting automation is even possible."
+    probe_questions:
+      - "Who does the bookkeeping — you, someone in-house, or an outside bookkeeper?"
+      - "How current are the books right now — reconciled through when?"
+      - "What does month-end look like for you?"
+      - "When you want to know if you made money last month, how do you find out?"
+      - "What tool are the books in — QuickBooks, something else, spreadsheets?"
+    depth_signals:
+      - "Who owns the books and their actual involvement"
+      - "Which tool is used and how it's set up"
+      - "How far behind reconciliation is"
+      - "Whether the owner gets and trusts a monthly P&L"
+      - "Pain around taxes or month-end"
+
+  - id: leads
+    label: "Leads"
+    why_it_matters: "Response speed and follow-up on new inquiries is where small businesses lose the most revenue with the least awareness."
+    probe_questions:
+      - "How does a new customer typically find you?"
+      - "What happens when someone calls and you can't pick up?"
+      - "How fast does someone get back to a new inquiry — honestly?"
+      - "After you send a quote or estimate, what happens next?"
+      - "Who answers the phone or messages during the day?"
+    depth_signals:
+      - "Main lead channels and rough volume"
+      - "What happens to a missed call or unanswered message"
+      - "Typical response time to a new inquiry"
+      - "Whether quotes/estimates get followed up, by whom, and how"
+      - "Where leads are tracked (CRM, notebook, memory)"
+
+  - id: scheduling
+    label: "Scheduling"
+    why_it_matters: "Booking, dispatch, reminders, and no-shows quietly burn hours and create the chaos owners feel daily."
+    probe_questions:
+      - "How does something get on the calendar today — walk me through a booking."
+      - "How do customers get reminded about their appointment or job?"
+      - "What happens when someone cancels or reschedules?"
+      - "How often do no-shows happen, and what do they cost you?"
+      - "Who decides who goes where each morning?"
+    depth_signals:
+      - "How bookings are made and on what tool/calendar"
+      - "Whether reminders go out, and how"
+      - "No-show / late-cancel frequency and handling"
+      - "How rescheduling is handled and how disruptive it is"
+      - "Dispatch/assignment process if there's a crew or staff"
+
+  - id: customer_comms
+    label: "Customer Comms"
+    why_it_matters: "Repetitive questions, review requests, and past-customer reactivation are cheap to automate and directly visible to customers."
+    probe_questions:
+      - "What questions do customers ask over and over?"
+      - "Do you ask for reviews after a job or sale? How?"
+      - "What happens after the work is done — any follow-up at all?"
+      - "When's the last time you reached out to past customers with an offer?"
+      - "How do customers usually reach you — call, text, email, social?"
+    depth_signals:
+      - "The top repetitive questions eating staff time"
+      - "Whether reviews are requested and on which platform"
+      - "Any post-job / post-sale follow-up sequence"
+      - "Whether past customers are ever reactivated"
+      - "Primary communication channels customers actually use"
+
+  - id: internal_ops
+    label: "Internal Ops"
+    why_it_matters: "Data re-typed between tools, reports built by hand, payroll prep — invisible admin work that adds up to real payroll hours."
+    probe_questions:
+      - "Is there anything you type into one system and then re-type into another?"
+      - "What report do you wish landed in your inbox every Monday?"
+      - "How does payroll prep work — collecting hours, approvals?"
+      - "If it applies — how do you track inventory or know when to reorder?"
+      - "What's the most annoying recurring admin task in the business?"
+    depth_signals:
+      - "Any double data entry between tools"
+      - "Reports the owner wants but doesn't have"
+      - "How payroll prep happens and how long it takes"
+      - "Inventory/ordering process if relevant"
+      - "The recurring admin task the owner hates most"
+
+  - id: tools_stack
+    label: "Tools & Stack"
+    why_it_matters: "What they pay for, what they hate, and what's held together with spreadsheets tells you what to build on — and what to replace."
+    probe_questions:
+      - "What software do you pay for right now, roughly?"
+      - "Which of those tools do you actually like? Which do you hate?"
+      - "What's currently managed in a spreadsheet — or in someone's head?"
+      - "Is there a tool you're paying for that nobody really uses?"
+      - "Anything you tried before that didn't stick? What happened?"
+    depth_signals:
+      - "List of current paid tools and rough monthly spend"
+      - "Which tools are loved vs. tolerated vs. hated"
+      - "What lives in spreadsheets or memory"
+      - "Shelfware — paid tools nobody uses"
+      - "Past failed tool/software attempts and why they failed"
+
+  - id: owner_time
+    label: "Owner's Time"
+    why_it_matters: "Where the owner's own hours go is the real budget conversation — and reveals buying temperature better than asking about money."
+    probe_questions:
+      - "Where do your own hours go in a typical week?"
+      - "What do you end up doing at night or on weekends that you shouldn't be?"
+      - "If you got five hours a week back, what would you spend them on?"
+      - "Have you worked with an agency or bought software to fix any of this before? How did it go?"
+      - "What would make this conversation a win for you?"
+    depth_signals:
+      - "Owner's weekly hours and where they go"
+      - "The after-hours admin work the owner resents"
+      - "The 'five hours back' answer — what they'd do with freed time"
+      - "Past experience with agencies/software (good or bad)"
+      - "Budget sensitivity / buying temperature signals"

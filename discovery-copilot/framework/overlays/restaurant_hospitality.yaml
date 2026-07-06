@@ -1,0 +1,57 @@
+# Overlay: restaurant & hospitality (restaurants, cafes, bars, catering,
+# hotels, venues).
+id: restaurant_hospitality
+label: "Restaurant / Hospitality"
+match_keywords:
+  - restaurant
+  - cafe
+  - coffee
+  - bar
+  - bakery
+  - catering
+  - food
+  - pizza
+  - taco
+  - grill
+  - diner
+  - hotel
+  - motel
+  - inn
+  - venue
+  - event space
+  - brewery
+
+areas:
+  scheduling:
+    probe_questions:
+      - "How do reservations or large-party bookings come in — phone, platform, walk-in?"
+      - "How do staff schedules get made each week, and how do swaps happen?"
+      - "What does a no-show reservation or event cancellation cost you?"
+    depth_signals:
+      - "Reservation channels and any platform fees"
+      - "Staff scheduling tool/process and swap chaos"
+      - "No-show handling (deposits, confirmations)"
+
+  customer_comms:
+    probe_questions:
+      - "How do you handle reviews — do you respond, and does anyone ask happy guests to leave one?"
+      - "Do you have a list of regulars or past event clients you can reach when it's slow?"
+    depth_signals:
+      - "Review volume, response habit, and ask process"
+      - "Guest list / regulars database existence and use"
+
+  money_in:
+    probe_questions:
+      - "For catering or events — how do deposits and final payments get collected?"
+      - "Which delivery platforms are you on, and what are they taking off the top?"
+    depth_signals:
+      - "Event/catering deposit and payment flow"
+      - "Delivery platform mix and fee awareness"
+
+  internal_ops:
+    probe_questions:
+      - "How does ordering from suppliers work — who counts, who calls, how often?"
+      - "How do you track food cost — do you know your margins by item?"
+    depth_signals:
+      - "Supplier ordering rhythm and who owns it"
+      - "Food-cost/margin visibility"

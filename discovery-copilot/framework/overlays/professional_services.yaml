@@ -1,0 +1,60 @@
+# Overlay: professional services (law, accounting, consulting, insurance,
+# real estate, agencies, financial advisors).
+id: professional_services
+label: "Professional Services"
+match_keywords:
+  - professional
+  - law
+  - legal
+  - attorney
+  - account
+  - cpa
+  - bookkeep
+  - consult
+  - insurance
+  - real estate
+  - realtor
+  - broker
+  - advis
+  - agency
+  - architect
+  - engineer
+  - notary
+  - tax
+
+areas:
+  leads:
+    probe_questions:
+      - "What does client intake look like from first contact to signed engagement?"
+      - "How long does it take a new client to get onboarded once they say yes?"
+    depth_signals:
+      - "Intake process steps and where prospects stall"
+      - "Time from yes to onboarded"
+
+  internal_ops:
+    probe_questions:
+      - "How do you collect documents from clients — and how many reminders does that take?"
+      - "Do you use engagement letters or contracts? How do they get signed?"
+      - "How much of your week goes to chasing clients for things you already asked for?"
+    depth_signals:
+      - "Document collection process and reminder burden"
+      - "Engagement letter / e-signature workflow"
+      - "Client-chasing time sink"
+
+  money_in:
+    probe_questions:
+      - "Do you bill hourly, flat fee, or retainer — and how do hours actually get captured?"
+      - "How much time slips through uncaptured or unbilled, honestly?"
+      - "How do retainers get replenished when they run low?"
+    depth_signals:
+      - "Billing model and time-capture method"
+      - "Leakage: unbilled or under-captured time"
+      - "Retainer replenishment process"
+
+  scheduling:
+    probe_questions:
+      - "How do clients book time with you — back-and-forth email or a booking link?"
+      - "How much of your calendar do you control vs. clients dictating it?"
+    depth_signals:
+      - "Whether a scheduling link is used or email ping-pong"
+      - "Calendar control pain"

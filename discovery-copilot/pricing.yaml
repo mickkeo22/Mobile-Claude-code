@@ -1,0 +1,21 @@
+# Pricing anchors per effort tier. Internal build notes quote these ranges.
+# Edit freely — no code changes needed. Values are USD.
+tiers:
+  quick_win:
+    label: "Quick win"
+    setup_low: 500
+    setup_high: 1500
+    monthly_low: 50
+    monthly_high: 250
+  standard_build:
+    label: "Standard build"
+    setup_low: 1500
+    setup_high: 5000
+    monthly_low: 150
+    monthly_high: 500
+  larger_project:
+    label: "Larger project"
+    setup_low: 5000
+    setup_high: 15000
+    monthly_low: 300
+    monthly_high: 1000

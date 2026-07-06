@@ -1,0 +1,131 @@
+{
+  "what_we_heard": [
+    "\"Everything lives on paper and in my head, and I'm the bottleneck for all of it\" — the delivery calendar, the special-orders binder, the whiteboard, the sticky notes.",
+    "Missed inquiries are costing real sales: a Facebook message that sat two weeks lost a $2,000 dining set, and missed calls hit an answering machine whose tape is usually full.",
+    "About 1 in 5 deliveries bounce because reminder calls only happen when Dana remembers at 8pm — and Marcus bills for the truck either way.",
+    "The books are three months behind in QuickBooks Desktop 2019, Square sales get keyed in from printed reports, and tax season has meant extensions plus an $1,100 cleanup bill two years running.",
+    "Dana works ~65 hours a week but only about half of it is selling: \"I'm the best closer here and I spend half my week being a very bad office administrator.\""
+  ],
+  "recommendations": [
+    {
+      "name": "Missed-Call Text-Back",
+      "bucket": "automation_systems",
+      "problem": "When the phone rings out, callers hit a full answering machine and \"just call the next store.\" Dana knows sales are leaking but can't say how many.",
+      "what_it_does": "When a call to the store goes unanswered, the caller instantly gets a text: \"Hi, it's Hartwell Home Furnishings — sorry we missed you! How can we help?\" Replies land in one shared inbox that Dana and Ellie can answer between customers.",
+      "what_changes": "You stop losing the callers who won't leave a voicemail. Every missed call becomes a conversation you can pick up when you're free instead of a customer at Ashley.",
+      "effort": "quick_win",
+      "implementation_path": "GHL snapshot: missed-call text-back workflow on a tracked local number layered in front of the store line. Shared conversation inbox for Dana + Ellie (mobile app).",
+      "components": ["GHL sub-account + local number (call forwarding from existing line)", "Missed-call text-back workflow", "Shared inbox + mobile app setup for 2 users"],
+      "build_hours_low": 3,
+      "build_hours_high": 6,
+      "monthly_maintenance": "Near zero once live; check the inbox is being answered during week 1.",
+      "dependencies_risks": ["10DLC/A2P registration for the texting number — allow 1–2 weeks lead time", "Store line forwarding must be configured with the current phone carrier"]
+    },
+    {
+      "name": "Delivery Scheduling + Reminder Texts",
+      "bucket": "automation_systems",
+      "problem": "Two trucks run off a paper calendar plus Marcus's notes app — this morning both trucks hit the same house while the Hendersons got nothing. ~1 in 5 deliveries bounce because nobody was home.",
+      "what_it_does": "One shared delivery calendar that Dana, Ellie, and Marcus all see. Customers automatically get a confirmation text when booked and a reminder the day before with a reply-to-confirm; no answer flags the stop for a quick call.",
+      "what_changes": "One source of truth instead of three. Bounced trips drop sharply — and Marcus's billed truck time goes to deliveries that actually complete.",
+      "effort": "standard_build",
+      "implementation_path": "GHL calendar + SMS reminder workflows for delivery slots; Marcus gets view/edit access from his phone. Reply-to-confirm updates the appointment status; unconfirmed stops appear on a morning checklist.",
+      "components": ["GHL calendar configured for 2 trucks (Tue/Fri slots)", "Booking confirmation + day-before reminder SMS workflows", "Reply-to-confirm automation + unconfirmed-stop morning digest", "30-min training for Marcus and Ellie"],
+      "build_hours_low": 8,
+      "build_hours_high": 15,
+      "monthly_maintenance": "Light — occasional slot/template tweaks; monitor reminder deliverability.",
+      "dependencies_risks": ["Same 10DLC number as text-back (shared dependency)", "Adoption risk: Marcus must book into the calendar, not his notes app — Ellie owning enforcement makes or breaks it"]
+    },
+    {
+      "name": "Order-Status Text Updates",
+      "bucket": "automation_systems",
+      "problem": "\"'Where's my order' is probably a third of the phone traffic some weeks\" — each answer takes ~20 minutes of digging through the special-orders binder.",
+      "what_it_does": "Custom orders go into a simple tracker instead of (only) the binder. When the status changes — ordered, at the factory, shipped, arrived — the customer gets a short text automatically. A 'check my order' link shows them the same status any time.",
+      "what_changes": "The binder archaeology stops. A third of your inbound calls disappear, and customers feel looked after during the 6–10 week wait instead of forgotten.",
+      "effort": "standard_build",
+      "implementation_path": "GHL pipeline (stages = order statuses) with SMS-on-stage-change; orders entered once at the counter. Optional later: Make scenario to email the manufacturer rep for status nudges at week 4/8.",
+      "components": ["GHL pipeline for special orders with 5 status stages", "Stage-change SMS templates", "Counter-side entry form (2 minutes per order)", "Status lookup link"],
+      "build_hours_low": 10,
+      "build_hours_high": 18,
+      "monthly_maintenance": "Ellie moves cards between stages as manufacturer updates arrive — minutes per day.",
+      "dependencies_risks": ["Depends on orders being entered at the counter — keep the paper ticket as backup during transition", "Manufacturer lead-time data is only as good as the rep's updates"]
+    },
+    {
+      "name": "Review Requests After Delivery",
+      "bucket": "automation_systems",
+      "problem": "~40 Google reviews (with two old delivery complaints on top) vs. ~900 at Ashley up the road — because asking felt tacky, so nobody ever asks.",
+      "what_it_does": "The day after a completed delivery, the customer gets a text thanking them and asking how it went, with a link to leave a Google review. Unhappy replies come to you privately first instead of going public.",
+      "what_changes": "Review count starts compounding with zero asking-in-person awkwardness, and the two old complaints get buried under fresh five-stars.",
+      "effort": "quick_win",
+      "implementation_path": "GHL review-request workflow triggered off the delivery calendar's 'completed' status; negative-sentiment reply routes to the shared inbox.",
+      "components": ["Post-delivery SMS workflow with Google review link", "Private feedback catch for unhappy replies"],
+      "build_hours_low": 2,
+      "build_hours_high": 4,
+      "monthly_maintenance": "None beyond glancing at new reviews.",
+      "dependencies_risks": ["Rides on the delivery calendar being adopted (item 2)", "Google Business Profile access needed"]
+    },
+    {
+      "name": "Books Cleanup + Monthly Close",
+      "bucket": "back_office",
+      "problem": "QuickBooks Desktop 2019 is ~3 months behind, Square sales are keyed in from printed reports, and the accountant charges an $1,100 'shoebox surcharge' every spring after two straight extension years.",
+      "what_it_does": "One-time cleanup and migration to QuickBooks Online with the Square feed connected, then a done-for-you monthly close: reconciled accounts and a plain-English P&L in your inbox by the 10th.",
+      "what_changes": "You stop running the store on \"vibes and the bank balance.\" Pam stops retyping printed reports, tax season stops costing extensions and cleanup fees, and you finally see whether last month made money while it still matters.",
+      "effort": "larger_project",
+      "implementation_path": "QBO migration from Desktop 2019 + Square→QBO native integration; catch-up reconciliation for the behind months; recurring monthly close service. Coordinate with Pam (keep her in the loop or transition her to reviewer).",
+      "components": ["QuickBooks Online migration", "Square integration + chart-of-accounts cleanup", "3-month catch-up reconciliation", "Recurring monthly close + emailed P&L summary"],
+      "build_hours_low": 20,
+      "build_hours_high": 40,
+      "monthly_maintenance": "Ongoing bookkeeping service (recurring monthly engagement).",
+      "dependencies_risks": ["Desktop-2019-to-QBO migrations can need data surgery — scope after seeing the file", "Family dynamics: Pam owns the books today — position as taking work off her plate, not replacing her", "Everything else that reports on money depends on this being trustworthy first"]
+    },
+    {
+      "name": "Balance Collection on Autopilot",
+      "bucket": "back_office",
+      "problem": "Final balances are collected by memory — \"a couple thousand floating out there on a sticky note\" — and the biggest account pays in 60–90 days because chasing Brightview is the call Dana hates most.",
+      "what_it_does": "Every delivery balance gets a text with a pay-by-card link the morning of delivery; unpaid balances get two automatic friendly nudges. Account invoices (the decorators, Brightview) get polite scheduled reminders at 30/45/60 days — from the system, not from Dana.",
+      "what_changes": "The sticky note retires. Money shows up without you having to be the bad guy, and the awkward Brightview call becomes an automatic email that isn't personal.",
+      "effort": "standard_build",
+      "implementation_path": "Square payment links via GHL workflows for delivery balances (Marcus can't take cards — the link solves the door problem too); invoice-reminder sequences for account customers tied to the monthly close.",
+      "components": ["Payment-link SMS workflow on delivery day", "2-step unpaid-balance nudge sequence", "AR reminder sequence for account customers (30/45/60 days)"],
+      "build_hours_low": 6,
+      "build_hours_high": 12,
+      "monthly_maintenance": "Review the unpaid list weekly (5 minutes).",
+      "dependencies_risks": ["AR reminders are only trustworthy after the books cleanup (item 5)", "Card-not-present Square fees are slightly higher — worth it vs. uncollected balances"]
+    },
+    {
+      "name": "Past-Customer Reactivation (31 Years of Files)",
+      "bucket": "custom_builds",
+      "problem": "Three decades of customers sit in a filing cabinet and Square history, never contacted once — in an industry where people replace furniture every 7–10 years.",
+      "what_it_does": "We pull what's already digital (Square customer list), digitize the recent paper tickets worth having, and build one clean customer list. Then a simple, occasional touch: a seasonal postcard-style email or text — new arrivals, a private sale for past customers — replacing the unused Constant Contact.",
+      "what_changes": "The 2018 bedroom-set buyers hear from you right when they're due again. Slow weeks get a lever you can actually pull, funded by cancelling ~$164/month of tools doing nothing.",
+      "effort": "larger_project",
+      "implementation_path": "Square customer export → dedupe/clean into GHL as the list of record (cancel Constant Contact + evaluate the $89/mo website builder). Optional custom piece: simple scanning workflow for high-value paper tickets (delivery history = what they bought and when). Quarterly campaign templates Ellie can send herself.",
+      "components": ["Square export + list cleanup/dedupe", "GHL email/SMS list setup with opt-out handling", "3 reusable campaign templates", "Optional: paper-ticket digitization pass for the last ~5 years"],
+      "build_hours_low": 15,
+      "build_hours_high": 30,
+      "monthly_maintenance": "Quarterly campaign send (Ellie, with templates) — under an hour each.",
+      "dependencies_risks": ["Old contact data decays — expect a meaningful bounce rate on the first send", "Text marketing requires proper opt-in handling; email is the safe default for the cold list", "Scope the paper digitization tightly or it becomes an archaeology project"]
+    }
+  ],
+  "starting_point": [
+    {
+      "name": "Missed-Call Text-Back + Review Requests",
+      "why": "Both are quick wins on the same texting number: one plugs the most obvious sales leak this week, the other starts compounding your reputation immediately — visible results before any bigger commitment."
+    },
+    {
+      "name": "Delivery Scheduling + Reminder Texts",
+      "why": "It attacks the pain that wrecked this morning — double-booked trucks and 1-in-5 bounced deliveries — and the calendar it creates is the backbone the order-status and review automations plug into."
+    }
+  ],
+  "next_steps": [
+    "Dana and Ellie review this together — if Ellie hates a system it dies, so she should pick holes in it now.",
+    "We price the starting-point items live today; each piece stands alone, no bundle required.",
+    "First build can be live inside two weeks (texting-number registration is the long pole)."
+  ],
+  "red_flags": [
+    "Gun-shy from two prior burns: a $400/mo marketing agency (cancelled after 8 months of stock photos) and a $4,500 trade-show 'retail management system' that never got past the barcode labels — lead with small, cancel-anytime pieces and proof, never a big platform pitch.",
+    "Ellie is the de-facto operator and veto: 'if Ellie hates a system it dies.' Get her in the demo; design admin flows around her three days a week.",
+    "Books must be cleaned before any money reporting or AR automation is presented as trustworthy — don't promise dashboards on top of QuickBooks Desktop 2019 data.",
+    "Budget temperature: frugal but not broke — she immediately reframed $164/mo of shelfware as '$2,000 a year for nothing.' ROI framing in her own numbers will land; vague 'growth' pitches will not.",
+    "Emotional landmine: quote follow-up was her late husband's ritual — position it as 'the system does what he used to do' with care, or avoid the comparison entirely."
+  ]
+}

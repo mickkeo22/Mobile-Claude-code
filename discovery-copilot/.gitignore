@@ -1,0 +1,16 @@
+# secrets
+.env
+
+# session data stays local — except the labeled synthetic sample
+sessions/*
+!sessions/_sample/
+
+# python
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# misc
+.DS_Store
+server.log

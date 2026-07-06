@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>MK Discovery Copilot</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<!-- ── State 1: Intake ─────────────────────────────────────────── -->
+<section id="state-intake" class="state">
+  <header class="brand">
+    <div class="brand-name">MK <span>Discovery Copilot</span></div>
+    <div class="brand-sub">Free AI &amp; automation audit — live assistant</div>
+  </header>
+
+  <form id="intake-form" autocomplete="off">
+    <label>Business name *
+      <input id="f-business" required placeholder="Hartwell Home Furnishings">
+    </label>
+    <label>Contact name
+      <input id="f-contact" placeholder="Dana">
+    </label>
+    <div class="row">
+      <label>Industry
+        <select id="f-industry">
+          <option value="">— pick one —</option>
+          <option value="other">Other / not sure</option>
+        </select>
+      </label>
+      <label>How'd this happen?
+        <select id="f-source">
+          <option value="walk_in">Walk-in</option>
+          <option value="cold_call">Cold call</option>
+          <option value="referral">Referral</option>
+          <option value="zoom">Zoom</option>
+        </select>
+      </label>
+    </div>
+    <label>Industry detail (free text)
+      <input id="f-industry-detail" placeholder="e.g. family furniture store, 2 locations">
+    </label>
+    <label>Notes you already have
+      <textarea id="f-notes" rows="2" placeholder="Anything you know going in…"></textarea>
+    </label>
+
+    <label>Audio source
+      <select id="f-audio">
+        <option value="loading">Loading devices…</option>
+      </select>
+    </label>
+    <div class="mic-test-row">
+      <button type="button" id="mic-test-btn" class="ghost">🎙 Test mic (5s)</button>
+      <span id="mic-test-result"></span>
+    </div>
+    <p class="hint" id="audio-hint"></p>
+
+    <button type="submit" id="start-btn" class="primary">▶ Start session</button>
+  </form>
+
+  <input type="file" id="upload-input" accept="audio/*,video/*,.m4a,.mp3,.wav,.ogg,.webm" hidden>
+
+  <details id="prev-sessions">
+    <summary>Previous sessions</summary>
+    <div id="sessions-list"></div>
+  </details>
+
+  <details id="framework-drawer">
+    <summary>Discovery framework (edit <code>framework/*.yaml</code>)</summary>
+    <div id="framework-list"></div>
+  </details>
+</section>
+
+<!-- ── State 2: Live ───────────────────────────────────────────── -->
+<section id="state-live" class="state hidden">
+  <header class="live-top">
+    <div class="live-meta">
+      <div id="live-biz">—</div>
+      <div class="live-sub"><span id="live-timer">00:00</span> <span id="live-overlay"></span></div>
+    </div>
+    <button id="stop-btn" title="S">■ Stop &amp; Generate<br>Report</button>
+  </header>
+
+  <div id="level-meter" title="input level"><div id="level-bar"></div></div>
+  <div id="status-line" class="hidden"></div>
+
+  <div id="coverage-pills" class="pills"></div>
+
+  <div id="move-on" class="move-on hidden"></div>
+
+  <div id="suggestions" class="suggestions">
+    <div class="waiting" id="suggestions-waiting">Listening… suggestions appear as the conversation develops.</div>
+  </div>
+
+  <details id="notable-wrap">
+    <summary>💡 Gold nuggets (<span id="notable-count">0</span>)</summary>
+    <ul id="notable-list"></ul>
+  </details>
+
+  <details id="transcript-wrap">
+    <summary>Live transcript</summary>
+    <div id="transcript"></div>
+    <div id="interim"></div>
+  </details>
+
+  <footer class="kbd-hint">Space = dismiss top suggestion &nbsp;·&nbsp; S = stop &amp; generate</footer>
+</section>
+
+<!-- ── State 3: Report ─────────────────────────────────────────── -->
+<section id="state-report" class="state hidden">
+  <header class="brand">
+    <div class="brand-name">MK <span>Discovery Copilot</span></div>
+  </header>
+
+  <div id="report-card">
+    <h2 id="report-title">Generating report…</h2>
+    <div id="report-progress">
+      <div class="spinner" id="report-spinner"></div>
+      <div id="report-phase">Analyzing conversation…</div>
+    </div>
+
+    <div id="report-links" class="hidden">
+      <p class="saved-note">✓ Session saved to <code id="saved-path"></code></p>
+      <a id="open-client" class="big-link" target="_blank" href="#">📄 Open client report</a>
+      <a id="open-internal" class="big-link secondary" target="_blank" href="#">🔒 Open internal build notes</a>
+      <button id="copy-path" class="ghost">Copy client report file path</button>
+      <span id="copy-done" class="hidden">copied ✓</span>
+    </div>
+
+    <div id="report-error" class="hidden"></div>
+    <button id="retry-report" class="primary hidden">↻ Retry report</button>
+  </div>
+
+  <button id="new-session" class="ghost">＋ New session</button>
+</section>
+
+<script src="/static/app.js"></script>
+</body>
+</html>

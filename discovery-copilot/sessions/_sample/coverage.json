@@ -1,0 +1,90 @@
+{
+  "areas": {
+    "money_in": {
+      "status": "covered",
+      "evidence": [
+        "50% deposits on custom orders via Square; balance collected on delivery by check/cash or manual phone-in card",
+        "\"There's probably a couple thousand floating out there right now that I just haven't gotten around to collecting.\"",
+        "Six decorators + a property management co. invoiced monthly from QuickBooks; Brightview pays in 60–90 days and nobody chases"
+      ],
+      "manual": false
+    },
+    "books": {
+      "status": "covered",
+      "evidence": [
+        "QuickBooks Desktop 2019; sister-in-law Pam (part-time, in Arizona half the year) reconciles — currently ~3 months behind",
+        "Square sales keyed in by hand from printed reports",
+        "Filed extensions two years running; ~$1,100 'shoebox surcharge' from the accountant for spring cleanup"
+      ],
+      "manual": false
+    },
+    "leads": {
+      "status": "covered",
+      "evidence": [
+        "Facebook page messages answered 'whoever notices' — a 2-week-old message cost a $2,000 dining set sale",
+        "Missed calls go to a full answering machine; \"people just call the next store\"",
+        "Quotes are handwritten cards with zero follow-up since her husband passed"
+      ],
+      "manual": false
+    },
+    "scheduling": {
+      "status": "covered",
+      "evidence": [
+        "Two delivery trucks scheduled on a paper calendar + Marcus's phone notes; double-booked the same house this morning",
+        "Day-before reminder calls happen only when Dana remembers at 8pm; ~1 in 5 deliveries bounce with nobody home"
+      ],
+      "manual": false
+    },
+    "customer_comms": {
+      "status": "covered",
+      "evidence": [
+        "\"'Where's my order' is probably a third of the phone traffic some weeks\" — 20 min per lookup in the special-orders binder",
+        "~40 Google reviews vs Ashley's ~900; they never ask (felt 'tacky')",
+        "31 years of past customers in a filing cabinet + Square, never once contacted; furniture replacement cycle is 7–10 years"
+      ],
+      "manual": false
+    },
+    "internal_ops": {
+      "status": "covered",
+      "evidence": [
+        "Daughter Ellie retypes Marcus's phone notes into a spreadsheet every Sunday",
+        "Manual payroll with calculator + IRS tables, 2 hours every other Friday",
+        "Sold out of bestselling mattress for 5 weeks because nobody noticed stock was low; floor counted twice a year"
+      ],
+      "manual": false
+    },
+    "tools_stack": {
+      "status": "covered",
+      "evidence": [
+        "Likes Square; QuickBooks Desktop 2019 avoided ('Pam's kingdom'); website builder $89/mo untouched since 2023; Constant Contact $75/mo unused >1yr; still pays for a fax line",
+        "Burned twice: $400/mo marketing agency (cancelled after 8 months) and a $4,500 'retail management system' that never got past the barcode labels"
+      ],
+      "manual": false
+    },
+    "owner_time": {
+      "status": "covered",
+      "evidence": [
+        "~65 hrs/week, only about half selling; Sunday-night 'sad little office hour' at the kitchen table",
+        "\"Every hour I'm on the floor we sell more... I'm the best closer here and I spend half my week being a very bad office administrator.\"",
+        "Decision-maker is Dana alone, but 'if Ellie hates a system it dies' — Ellie is an ally pushing to modernize"
+      ],
+      "manual": false
+    }
+  },
+  "notable": [
+    "Lost a $2,000 dining-set sale to Ashley because a Facebook message sat two weeks",
+    "~1 in 5 deliveries bounce (nobody home) and contractor Marcus bills either way",
+    "'Where's my order' calls = up to a third of phone traffic; each takes ~20 min of binder archaeology",
+    "~$2,000+ in uncollected delivery balances 'on a sticky note'",
+    "$164/mo of shelfware: $89 website builder untouched since 2023 + $75 Constant Contact unused a year",
+    "$1,100/yr accountant 'shoebox surcharge' + two straight years of filed extensions",
+    "Sold out of the bestselling mattress for 5 weeks at the start of holiday season — nobody noticed",
+    "Burned before: $400/mo agency (8 months) and $4,500 trade-show 'retail management system' never deployed — gun-shy",
+    "31 years of past customers in a filing cabinet; 7–10 year furniture replacement cycle; zero reactivation ever",
+    "Ellie (daughter) must love any new system or it dies; she's been pushing to modernize for two years"
+  ],
+  "move_on": [
+    "You have plenty on scheduling chaos — books and money collection are still untouched.",
+    "Tools and past-vendor history are covered — close with the owner-time and budget questions."
+  ]
+}

@@ -1,0 +1,60 @@
+# Overlay: home services (tree service, pressure washing, contractors,
+# HVAC, plumbing, landscaping, roofing...). Additive — merged into core
+# when the intake industry matches. Ported from the MK Operating audit.
+id: home_services
+label: "Home Services"
+match_keywords:
+  - home service
+  - tree
+  - pressure wash
+  - power wash
+  - contractor
+  - landscap
+  - lawn
+  - hvac
+  - plumb
+  - roof
+  - electric
+  - paint
+  - clean
+  - pest
+  - handyman
+  - remodel
+  - fenc
+  - garage
+  - gutter
+
+areas:
+  leads:
+    probe_questions:
+      - "When a quote goes out and the customer goes quiet, what happens — does anyone follow up?"
+      - "In your market, if you don't answer and the next company does — how often do you think you lose that job?"
+      - "How many estimates turn into jobs, roughly? Where do the rest go?"
+    depth_signals:
+      - "Quote-to-close rate and what happens to un-closed quotes"
+      - "Awareness that first-to-respond usually wins the job"
+
+  scheduling:
+    probe_questions:
+      - "How do you schedule crews when weather blows up the week?"
+      - "How far out are you booked right now — and how does that swing with the season?"
+      - "Who tells the crew where to be each morning, and how?"
+    depth_signals:
+      - "Seasonal demand swings and how capacity is managed"
+      - "Crew scheduling/dispatch method (group text, whiteboard, software)"
+
+  customer_comms:
+    probe_questions:
+      - "Do you take before/after photos on the job? What happens to them?"
+      - "Do neighbors ever ask for a card while you're on a job? What do you do with that?"
+    depth_signals:
+      - "Whether job-site photos are captured and used for marketing/reviews"
+      - "Neighborhood/route-based upsell awareness"
+
+  money_in:
+    probe_questions:
+      - "Do you collect anything before starting a bigger job, or is it all on completion?"
+      - "How do you get paid on the spot — can the crew take a card at the truck?"
+    depth_signals:
+      - "Deposit practice on larger jobs"
+      - "Field payment capability (card/text-to-pay at the job site)"

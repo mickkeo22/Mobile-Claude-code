@@ -1,0 +1,53 @@
+# Overlay: retail (shops, boutiques, furniture, hardware, specialty stores).
+id: retail
+label: "Retail"
+match_keywords:
+  - retail
+  - store
+  - shop
+  - boutique
+  - furniture
+  - hardware
+  - grocery
+  - clothing
+  - apparel
+  - gift
+  - jewel
+  - antique
+  - bookstore
+  - florist
+
+areas:
+  internal_ops:
+    probe_questions:
+      - "How do you know when you're low on something — is there a reorder point, or is it eyeballed?"
+      - "How do supplier orders get placed — portal, email, phone, rep visits?"
+      - "How often do you count inventory, and how painful is it?"
+    depth_signals:
+      - "How inventory levels are tracked (POS, spreadsheet, eyeball)"
+      - "Supplier ordering process and frequency"
+      - "Shrink/miscount pain and physical count process"
+
+  money_in:
+    probe_questions:
+      - "What runs the register — which POS — and does it talk to your books?"
+      - "Do you sell online at all? How do online and in-store inventory stay in sync?"
+    depth_signals:
+      - "POS system in use and whether it syncs to accounting"
+      - "Online vs in-store sales split and sync pain"
+
+  leads:
+    probe_questions:
+      - "How does foot traffic find you — and what do you do to bring people back in?"
+      - "Do you capture customer contact info at checkout? What happens with it?"
+    depth_signals:
+      - "Whether customer contacts are captured at point of sale"
+      - "Any repeat-visit marketing (email list, loyalty, socials)"
+
+  customer_comms:
+    probe_questions:
+      - "When something a customer wanted comes back in stock, how would they find out?"
+      - "Do you do special orders? How does the customer hear their item arrived?"
+    depth_signals:
+      - "Back-in-stock / special-order notification process"
+      - "Loyalty or repeat-customer program status"
