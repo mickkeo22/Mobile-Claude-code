@@ -23,7 +23,7 @@ from . import config, deepgram_rest, reports
 from .deepgram_live import DeepgramLive
 from .framework import Framework, fresh_coverage
 from .live_engine import SuggestionEngine
-from .llm import LLM
+from .llm import make_llm
 from .schemas import Intake
 from .sessions import SessionStore, list_sessions
 
@@ -64,7 +64,7 @@ class LiveSession:
     LEVEL_INTERVAL = 0.6
     RECONNECT_DELAYS = [1, 2, 4, 8, 8]
 
-    def __init__(self, store: SessionStore, fw: Framework, llm: LLM, hub: Hub):
+    def __init__(self, store: SessionStore, fw: Framework, llm, hub: Hub):
         self.store = store
         self.hub = hub
         self.llm = llm
@@ -251,9 +251,15 @@ async def lifespan(app: FastAPI):
     config.check_keys()  # fail loudly (spec §2)
     config.SESSIONS_DIR.mkdir(exist_ok=True)
     app.state.framework = Framework.load()
-    app.state.llm = LLM()
+    app.state.llm = make_llm()
     app.state.live = None            # the single LiveSession, if any
     app.state.generating = set()     # session ids with a report in flight
+    log.info(
+        "LLM backend: %s (live=%s, report=%s)",
+        "Claude subscription via Claude Code" if config.LLM_BACKEND == "claude_code"
+        else "Anthropic API",
+        config.LIVE_MODEL, config.REPORT_MODEL,
+    )
     log.info("Discovery Copilot ready on http://%s:%s", config.HOST, config.PORT)
     yield
     live: LiveSession | None = app.state.live

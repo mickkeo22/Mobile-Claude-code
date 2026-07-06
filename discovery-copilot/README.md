@@ -17,10 +17,9 @@ cd discovery-copilot
 python3 -m venv .venv && source .venv/bin/activate     # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 
-cp .env.example .env      # then fill in the two keys:
-                          #   DEEPGRAM_API_KEY   (console.deepgram.com)
-                          #   ANTHROPIC_API_KEY  (console.anthropic.com)
+cp .env.example .env      # fill in DEEPGRAM_API_KEY (console.deepgram.com)
 
+claude login              # once — the app runs on your Claude subscription
 python launch.py          # starts the server + opens the sidebar window
 ```
 
@@ -28,7 +27,41 @@ The launcher opens a ~440px browser app-window pinned to the right edge of
 your screen. No Chrome/Edge/Brave installed? It falls back to a normal tab —
 just resize it into a sidebar.
 
-The app **refuses to start** with a clear message if either key is missing.
+The app **refuses to start** with a clear, actionable message if anything
+its mode needs is missing.
+
+## Powered by your Claude subscription (default)
+
+By default (`LLM_BACKEND=claude_code` in `.env`) all intelligence — live
+suggestions and report generation — runs through **Claude Code / the Claude
+Agent SDK** on your Claude Pro/Max login. No `ANTHROPIC_API_KEY`, no
+per-token bills; the calls come out of your subscription's usage allowance.
+This is the officially supported way to run a personal local tool on a
+subscription. (Never extract OAuth tokens to call the raw API — that's the
+path that *isn't* sanctioned, and this app doesn't do it.)
+
+Setup: install [Claude Code](https://claude.com/claude-code) and run
+`claude login` once with your subscription account. That's it — the app
+checks at startup and tells you exactly what to fix if it can't authenticate.
+
+**Plan sizing:** a 45-minute discovery call makes ~100–140 small Haiku calls
+plus one Sonnet report call.
+
+- **Max (5x / 20x):** comfortable at the default cadence.
+- **Pro:** workable but tight — set `LIVE_MIN_INTERVAL_SECS=45` (or 60) in
+  `.env` to slow the live engine and protect your 5-hour usage window.
+
+**Trade-offs vs API mode:** each subscription call spawns a one-shot Claude
+Code run, adding ~1–3 s of latency per suggestion cycle (irrelevant at the
+20 s cadence, and report generation still lands well inside the 2-minute
+target). If you ever want the absolute lowest latency — or you've burned
+your usage window — flip `.env` to `LLM_BACKEND=api`, add an
+`ANTHROPIC_API_KEY`, and restart; total API cost is roughly a dollar per
+call anyway.
+
+**Deepgram is separate either way** — speech-to-text isn't part of a Claude
+subscription, so the (sub-cent-per-minute) `DEEPGRAM_API_KEY` is always
+required.
 
 ### Before your first real call: the 30-second mic test
 
@@ -146,13 +179,16 @@ anchors (`pricing.yaml`) are config files too.
   45-minute discovery call is trivial. The stream is closed the moment you
   hit Stop.
 - **Live suggestions** run on `claude-haiku-4-5` with debounce rules (at most
-  one call per 20s, skipped entirely during dead air, rolling 2,000-word
-  window) — a 45-minute call lands well under a dollar.
+  one call per 20s — `LIVE_MIN_INTERVAL_SECS` to change — skipped entirely
+  during dead air, rolling 2,000-word window).
 - **Reports** are one `claude-sonnet-4-6` call per session (map-reduce first
   if the transcript exceeds ~25k words).
 
-Every call's token counts and estimated dollars are logged to each session's
-`costs.json`.
+On the default subscription backend the Anthropic side costs **$0 extra**
+(it draws on your plan's usage window; `costs.json` logs tokens with
+`est_cost_usd: 0`). In API mode a 45-minute call lands well under a dollar,
+and every call's token counts and estimated dollars are logged to each
+session's `costs.json`.
 
 ---
 
@@ -193,9 +229,16 @@ in `sessions/_sample/` — see its README.
   app retries with backoff and keeps writing `audio.wav` regardless. Worst
   case, upload the WAV after the call.
 - **Report failed** — the transcript is safe on disk; hit *Retry report*.
-  Check the terminal for the underlying API error.
-- **Anthropic hiccups mid-call** — suggestions silently skip a cycle and
-  resume; transcription is unaffected.
+  Check the terminal for the underlying error.
+- **Anthropic/Claude Code hiccups mid-call** — suggestions silently skip a
+  cycle and resume; transcription is unaffected.
+- **"Claude Code is installed but not logged in"** at startup — run
+  `claude login` with your subscription account (or `claude setup-token`),
+  or switch `.env` to `LLM_BACKEND=api` with an `ANTHROPIC_API_KEY`.
+- **Subscription usage window exhausted mid-call** (Claude Code rate limit) —
+  suggestions pause but the recording and transcript keep going; generate
+  the report when the window resets, or flip to `LLM_BACKEND=api` and hit
+  *Retry report*.
 
 ## Explicitly not here (v1)
 

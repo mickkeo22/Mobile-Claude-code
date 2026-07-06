@@ -27,6 +27,10 @@ DEEPGRAM_MODEL = os.environ.get("DEEPGRAM_MODEL", "nova-3").strip()
 DEEPGRAM_WS_URL = "wss://api.deepgram.com/v1/listen"
 DEEPGRAM_REST_URL = "https://api.deepgram.com/v1/listen"
 
+# "claude_code" (default) = your Claude Pro/Max subscription via Claude Code /
+# the Agent SDK, no ANTHROPIC_API_KEY needed. "api" = metered Anthropic API.
+LLM_BACKEND = os.environ.get("LLM_BACKEND", "claude_code").strip().lower()
+
 LIVE_MODEL = os.environ.get("LIVE_MODEL", "claude-haiku-4-5").strip()
 REPORT_MODEL = os.environ.get("REPORT_MODEL", "claude-sonnet-4-6").strip()
 
@@ -38,7 +42,12 @@ CHANNELS = 1
 BLOCK_MS = 200  # audio callback block size
 
 # Live engine cadence (seconds / words) — spec §4
-ANALYSIS_MIN_INTERVAL = 20      # never more than one call per 20s
+# LIVE_MIN_INTERVAL_SECS knob: on a Claude Pro plan raise this to ~45–60 so a
+# long call doesn't eat the 5-hour usage window. Max plans are fine at 20.
+try:
+    ANALYSIS_MIN_INTERVAL = max(5, int(os.environ.get("LIVE_MIN_INTERVAL_SECS", "20")))
+except ValueError:
+    ANALYSIS_MIN_INTERVAL = 20
 ANALYSIS_SPEECH_SECONDS = 45    # ...or when ~45s of new speech accumulated
 ANALYSIS_MIN_NEW_WORDS = 25     # skip entirely below this
 TURN_TRIGGER_WORDS = 40         # substantial prospect answer ends a turn
@@ -56,26 +65,43 @@ DEFAULT_RATE = (3.00, 15.00)
 
 
 def estimate_cost_usd(model: str, input_tokens: int, output_tokens: int) -> float:
+    if LLM_BACKEND == "claude_code":
+        return 0.0  # flat-rate subscription — no per-token dollars
     rate_in, rate_out = MODEL_RATES.get(model, DEFAULT_RATE)
     return (input_tokens * rate_in + output_tokens * rate_out) / 1_000_000
 
 
 def check_keys() -> None:
-    """Fail loudly at startup with a clear message if a key is missing."""
-    missing = []
+    """Fail loudly at startup with a clear, actionable message."""
+    problems: list[str] = []
     if not DEEPGRAM_API_KEY:
-        missing.append("DEEPGRAM_API_KEY")
-    if not ANTHROPIC_API_KEY:
-        missing.append("ANTHROPIC_API_KEY")
-    if missing:
+        problems.append(
+            "DEEPGRAM_API_KEY is missing — speech-to-text has no subscription "
+            "substitute (console.deepgram.com; sub-cent per minute)"
+        )
+    if LLM_BACKEND == "api":
+        if not ANTHROPIC_API_KEY:
+            problems.append(
+                "ANTHROPIC_API_KEY is missing (required when LLM_BACKEND=api; "
+                "or switch to LLM_BACKEND=claude_code to use your Claude "
+                "subscription instead)"
+            )
+    elif LLM_BACKEND == "claude_code":
+        from .llm_claude_code import ClaudeCodeLLM  # noqa: PLC0415 — avoid import cycle
+        problems += ClaudeCodeLLM.preflight()
+    else:
+        problems.append(
+            f"Unknown LLM_BACKEND={LLM_BACKEND!r} — use 'claude_code' "
+            "(subscription, default) or 'api'"
+        )
+    if problems:
         sys.stderr.write(
             "\n"
             + "=" * 62 + "\n"
-            + "  Discovery Copilot cannot start — missing API key(s):\n"
-            + "".join(f"    • {k}\n" for k in missing)
+            + "  Discovery Copilot cannot start:\n"
+            + "".join(f"    • {p}\n" for p in problems)
             + "\n"
-            + f"  Create {BASE_DIR / '.env'} (copy .env.example)\n"
-            + "  and fill in the missing value(s), then start again.\n"
+            + f"  Config lives in {BASE_DIR / '.env'} (copy .env.example).\n"
             + "=" * 62 + "\n\n"
         )
         raise SystemExit(1)

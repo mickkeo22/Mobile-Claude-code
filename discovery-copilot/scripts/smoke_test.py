@@ -129,6 +129,7 @@ def t_deepgram_rest_parsing():
 
 
 def t_session_store():
+    from app import config
     from app.sessions import SessionStore
     with tempfile.TemporaryDirectory() as td:
         st = SessionStore(Path(td) / "20260101_000000_test")
@@ -137,10 +138,20 @@ def t_session_store():
         st.append_segment({"start": 2, "end": 4, "speaker": 1, "text": "hi", "words": 1})
         assert len(st.read_transcript()) == 2
         assert "Speaker 1" in st.transcript_text()
-        st.log_cost("live_analysis", "claude-haiku-4-5", 1000, 200)
-        costs = st._read_json("costs.json", {})
-        assert costs["totals"]["input_tokens"] == 1000
-        assert 0 < costs["totals"]["est_cost_usd"] < 0.01
+        orig = config.LLM_BACKEND
+        try:
+            config.LLM_BACKEND = "api"  # metered mode: real dollar estimates
+            st.log_cost("live_analysis", "claude-haiku-4-5", 1000, 200)
+            costs = st._read_json("costs.json", {})
+            assert costs["totals"]["input_tokens"] == 1000
+            assert 0 < costs["totals"]["est_cost_usd"] < 0.01
+            config.LLM_BACKEND = "claude_code"  # subscription: tokens logged, $0
+            st.log_cost("live_analysis", "claude-haiku-4-5", 1000, 200)
+            costs = st._read_json("costs.json", {})
+            assert costs["totals"]["input_tokens"] == 2000
+            assert costs["calls"][-1]["est_cost_usd"] == 0.0
+        finally:
+            config.LLM_BACKEND = orig
 
 
 def t_engine_cadence():
@@ -168,6 +179,174 @@ def t_engine_cadence():
     asyncio.run(run())
 
 
+def t_backend_factory():
+    from app import config
+    from app.llm import LLM, make_llm
+    from app.llm_claude_code import ClaudeCodeLLM
+    orig = config.LLM_BACKEND
+    try:
+        config.LLM_BACKEND = "api"
+        assert isinstance(make_llm(), LLM)
+        config.LLM_BACKEND = "claude_code"
+        assert isinstance(make_llm(), ClaudeCodeLLM)
+    finally:
+        config.LLM_BACKEND = orig
+
+
+def t_claude_code_parsing():
+    from app.llm_claude_code import output_format_for, parse_json_loosely
+    from app.schemas import ANALYSIS_TOOL
+    fmt = output_format_for(ANALYSIS_TOOL)
+    assert fmt == {"type": "json_schema", "schema": ANALYSIS_TOOL["input_schema"]}
+    assert parse_json_loosely('```json\n{"a": 1}\n```') == {"a": 1}
+    assert parse_json_loosely('Sure! Here it is: {"a": {"b": 2}} hope that helps') == {"a": {"b": 2}}
+    assert parse_json_loosely('{"plain": true}') == {"plain": True}
+    for bad in ("no json here", "[1, 2, 3]"):
+        try:
+            parse_json_loosely(bad)
+            raise AssertionError(f"should have rejected {bad!r}")
+        except ValueError:
+            pass
+
+
+def t_claude_code_mocked_query():
+    """Exercise the subscription backend against a fake Agent SDK."""
+    import asyncio
+    from app.llm_claude_code import ClaudeCodeLLM
+    from app.schemas import ANALYSIS_TOOL
+
+    class FakeResult:
+        def __init__(self, structured=None, result="", is_error=False):
+            self.structured_output = structured
+            self.result = result
+            self.is_error = is_error
+            self.usage = {"input_tokens": 123, "output_tokens": 45}
+
+    class FakeOptions:
+        def __init__(self, **kw):
+            self.kw = kw
+
+    def fake_query_returning(msg):
+        async def q(*, prompt, options):
+            assert options.kw["allowed_tools"] == []
+            assert options.kw["max_turns"] == 1
+            yield FakeResult(structured={"decoy": True})  # non-Result messages ignored below
+            yield msg
+        return q
+
+    async def run():
+        llm = ClaudeCodeLLM.__new__(ClaudeCodeLLM)  # skip real SDK import
+        llm._Options = FakeOptions
+        llm._supports_output_format = True
+
+        # A: structured output path
+        good = FakeResult(structured={"coverage_updates": [], "suggestions": [],
+                                      "move_on": [], "notable": ["x"]})
+        llm._ResultMessage = FakeResult
+        llm._query = fake_query_returning(good)
+        data, usage = await llm.forced_tool_call(
+            model="claude-haiku-4-5", system="s", user_content="u",
+            tool=ANALYSIS_TOOL, max_tokens=1200)
+        assert data["notable"] == ["x"] and usage.input_tokens == 123
+
+        # B: fallback — no structured_output, fenced JSON in text
+        fenced = FakeResult(structured=None, result='```json\n{"coverage_updates": [], '
+                            '"suggestions": [], "move_on": [], "notable": []}\n```')
+        llm._query = fake_query_returning(fenced)
+        data, _ = await llm.forced_tool_call(
+            model="claude-haiku-4-5", system="s", user_content="u",
+            tool=ANALYSIS_TOOL, max_tokens=1200)
+        assert data["notable"] == []
+
+        # C: error result raises (feeds the retry/skip machinery)
+        err = FakeResult(structured=None, result="rate limit reached", is_error=True)
+        llm._query = fake_query_returning(err)
+        try:
+            await llm.forced_tool_call(model="m", system="s", user_content="u",
+                                       tool=ANALYSIS_TOOL, max_tokens=1200)
+            raise AssertionError("error result should raise")
+        except RuntimeError as e:
+            assert "rate limit" in str(e)
+
+        # D: text_call returns final text
+        llm._query = fake_query_returning(FakeResult(result="a plain summary"))
+        text, usage = await llm.text_call(model="m", system="s",
+                                          user_content="u", max_tokens=800)
+        assert text == "a plain summary" and usage.output_tokens == 45
+
+    asyncio.run(run())
+
+
+def t_check_keys_modes():
+    from app import config
+    orig = (config.LLM_BACKEND, config.DEEPGRAM_API_KEY, config.ANTHROPIC_API_KEY)
+    try:
+        config.DEEPGRAM_API_KEY = "x"
+        # api mode without an anthropic key must fail loudly
+        config.LLM_BACKEND, config.ANTHROPIC_API_KEY = "api", ""
+        try:
+            config.check_keys()
+            raise AssertionError("api mode without key should exit")
+        except SystemExit:
+            pass
+        # api mode with both keys passes
+        config.ANTHROPIC_API_KEY = "x"
+        config.check_keys()
+        # unknown backend fails loudly
+        config.LLM_BACKEND = "bogus"
+        try:
+            config.check_keys()
+            raise AssertionError("unknown backend should exit")
+        except SystemExit:
+            pass
+        # subscription preflight runs without crashing (result is env-dependent)
+        from app.llm_claude_code import ClaudeCodeLLM
+        assert isinstance(ClaudeCodeLLM.preflight(), list)
+    finally:
+        config.LLM_BACKEND, config.DEEPGRAM_API_KEY, config.ANTHROPIC_API_KEY = orig
+
+
+def t_engine_with_fake_backend():
+    """Full analyze() cycle against a backend-shaped fake — proves the engine
+    is backend-agnostic (works identically on API or subscription)."""
+    import asyncio
+    from app.framework import Framework, fresh_coverage
+    from app.live_engine import SuggestionEngine
+    from app.llm import Usage
+
+    class FakeLLM:
+        async def forced_tool_call(self, **kw):
+            return ({
+                "coverage_updates": [
+                    {"area": "leads", "status": "covered", "evidence": "missed calls"}],
+                "suggestions": [
+                    {"area": "books", "question": f"Q{i}?", "why": "w",
+                     "priority": "new_area"} for i in range(5)],  # engine must cap at 3
+                "move_on": ["move along"],
+                "notable": ["gold"],
+            }, Usage(10, 5))
+
+    async def run():
+        fw = Framework.load()
+        areas = fw.merged_areas(None)
+        updates, cycles, costs = [], [], []
+        eng = SuggestionEngine(
+            llm=FakeLLM(), areas=areas, intake={"business_name": "T"},
+            coverage=fresh_coverage(areas),
+            on_update=lambda p: (updates.append(p), asyncio.sleep(0))[1],
+            log_cycle=cycles.append,
+            log_cost=lambda *a: costs.append(a),
+        )
+        eng.feed({"start": 0, "end": 30, "speaker": 1, "text": "word " * 50, "words": 50})
+        await eng.analyze()
+        assert updates and len(updates[0]["suggestions"]) == 3
+        assert updates[0]["coverage"]["areas"]["leads"]["status"] == "covered"
+        assert "gold" in updates[0]["coverage"]["notable"]
+        assert cycles and cycles[0]["error"] is None
+        assert costs and costs[0][0] == "live_analysis"
+    asyncio.run(run())
+
+
 def t_app_imports():
     import importlib
     m = importlib.import_module("app.main")
@@ -188,6 +367,11 @@ if __name__ == "__main__":
     check("deepgram prerecorded response parsing", t_deepgram_rest_parsing)
     check("session store round trip + cost logging", t_session_store)
     check("live engine cadence/debounce rules", t_engine_cadence)
+    check("LLM backend factory (api / claude_code)", t_backend_factory)
+    check("claude_code JSON parsing + schema passthrough", t_claude_code_parsing)
+    check("claude_code backend against a mocked Agent SDK", t_claude_code_mocked_query)
+    check("mode-aware check_keys fail-loud behavior", t_check_keys_modes)
+    check("engine end-to-end with backend-shaped fake", t_engine_with_fake_backend)
     check("FastAPI app imports with all routes", t_app_imports)
     if FAILURES:
         print(f"\n{len(FAILURES)} FAILED: {', '.join(FAILURES)}")

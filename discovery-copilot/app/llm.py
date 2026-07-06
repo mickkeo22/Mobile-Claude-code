@@ -86,3 +86,15 @@ class LLM:
 def validated(model_cls, data: dict) -> Any:
     """Pydantic validation with a readable error."""
     return model_cls.model_validate(data)
+
+
+def make_llm():
+    """Backend factory: metered API or the Claude subscription (Claude Code).
+
+    Both backends expose the same forced_tool_call/text_call interface, so
+    the live engine and report generator are backend-agnostic.
+    """
+    if config.LLM_BACKEND == "claude_code":
+        from .llm_claude_code import ClaudeCodeLLM  # lazy — api mode never imports it
+        return ClaudeCodeLLM()
+    return LLM()
