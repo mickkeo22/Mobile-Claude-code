@@ -177,7 +177,7 @@ function handleMessage(msg) {
     case "transcript_final": addTranscriptLine(msg.seg); break;
     case "transcript_interim": $("interim").textContent = msg.text; break;
     case "analysis": applyAnalysis(msg); break;
-    case "coverage": S.coverage = msg.coverage; renderPills(); break;
+    case "coverage": S.coverage = msg.coverage; renderPills(); renderNotable([]); break;
     case "level": $("level-bar").style.width = Math.min(100, msg.peak * 130) + "%"; break;
     case "status": showStatus(msg); break;
     case "report_progress": onReportProgress(msg); break;
@@ -494,6 +494,18 @@ function onReportDone(msg) {
   S.clientPath = msg.links.client_path;
   S.followupUrl = msg.links.followup || null;
   $("copy-followup").classList.toggle("hidden", !S.followupUrl);
+  renderCostLine(msg.usage, msg.backend);
+}
+
+function renderCostLine(usage, backend) {
+  const el = $("report-cost");
+  if (!usage || !usage.input_tokens) { el.classList.add("hidden"); return; }
+  const tok = (n) => (n >= 1000 ? Math.round(n / 1000) + "k" : String(n || 0));
+  const money = backend === "claude_code"
+    ? "$0 extra (subscription plan)"
+    : "~$" + (usage.est_cost_usd || 0).toFixed(2) + " API usage";
+  el.textContent = `Session usage: ${tok(usage.input_tokens)} in / ${tok(usage.output_tokens)} out tokens · ${money}`;
+  el.classList.remove("hidden");
 }
 
 function onReportError(msg) {
@@ -508,6 +520,11 @@ function onReportError(msg) {
 }
 
 $("retry-report").addEventListener("click", startGeneration);
+
+$("print-report").addEventListener("click", () => {
+  const w = window.open($("open-client").href, "_blank");
+  if (w) w.addEventListener("load", () => setTimeout(() => w.print(), 300));
+});
 
 $("copy-path").addEventListener("click", async () => {
   try {
@@ -545,7 +562,31 @@ document.addEventListener("keydown", (ev) => {
   } else if (ev.key === "s" || ev.key === "S") {
     ev.preventDefault();
     stopAndGenerate();
+  } else if (ev.key === "n" || ev.key === "N") {
+    ev.preventDefault();
+    $("capture-bar").classList.remove("hidden");
+    $("capture-input").focus();
   }
+});
+
+/* quick-capture nugget (N) */
+$("capture-input").addEventListener("keydown", async (ev) => {
+  if (ev.key === "Escape") {
+    $("capture-input").value = "";
+    $("capture-bar").classList.add("hidden");
+    return;
+  }
+  if (ev.key !== "Enter") return;
+  const text = $("capture-input").value.trim();
+  $("capture-input").value = "";
+  $("capture-bar").classList.add("hidden");
+  if (!text || !S.sessionId) return;
+  try {
+    await api(`/api/sessions/${S.sessionId}/notable`, {
+      method: "POST", body: JSON.stringify({ text }),
+    });
+    $("notable-wrap").open = true;  // show where it landed
+  } catch (e) { /* non-fatal — the note is only lost if the session isn't live */ }
 });
 
 /* ── util ──────────────────────────────────────────────────────── */

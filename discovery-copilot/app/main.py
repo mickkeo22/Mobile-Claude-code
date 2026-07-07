@@ -384,7 +384,9 @@ async def _run_generation(store: SessionStore) -> None:
         links = await reports.generate_reports(store, app.state.llm, progress)
         took = round(time.monotonic() - t0, 1)
         await hub.broadcast({"type": "report_done", "session_id": store.id,
-                             "links": links, "seconds": took})
+                             "links": links, "seconds": took,
+                             "usage": store.read_costs_totals(),
+                             "backend": config.LLM_BACKEND})
         log.info("reports for %s generated in %.1fs", store.id, took)
     except Exception as e:
         log.exception("report generation failed for %s", store.id)
@@ -429,6 +431,23 @@ async def set_speaker(session_id: str, body: dict) -> JSONResponse:
     intake = store.read_intake()
     intake["consultant_speaker"] = speaker
     store.write_intake(intake)
+    return JSONResponse({"ok": True})
+
+
+@app.post("/api/sessions/{session_id}/notable")
+async def add_notable(session_id: str, body: dict) -> JSONResponse:
+    """Quick-capture: Mick heard gold the model missed — N key in the UI."""
+    text = str(body.get("text", "")).strip()
+    if not text:
+        return JSONResponse({"error": "empty note"}, status_code=400)
+    live: LiveSession | None = app.state.live
+    if live is None or live.store.id != session_id:
+        return JSONResponse({"error": "session not live"}, status_code=409)
+    notable = live.coverage.setdefault("notable", [])
+    if text not in notable:
+        notable.append(text)
+        live.store.write_coverage(live.coverage)
+    await hub.broadcast({"type": "coverage", "coverage": live.coverage})
     return JSONResponse({"ok": True})
 
 

@@ -89,6 +89,10 @@
 
   <div id="move-on" class="move-on hidden"></div>
 
+  <div id="capture-bar" class="hidden">
+    <input id="capture-input" placeholder="💡 Gold nugget… (Enter saves · Esc cancels)" autocomplete="off">
+  </div>
+
   <div id="suggestions" class="suggestions">
     <div class="waiting" id="suggestions-waiting">Listening… suggestions appear as the conversation develops.</div>
   </div>
@@ -109,7 +113,7 @@
     <div id="interim"></div>
   </details>
 
-  <footer class="kbd-hint">Space = dismiss top suggestion &nbsp;·&nbsp; S = stop &amp; generate</footer>
+  <footer class="kbd-hint">Space = dismiss top suggestion &nbsp;·&nbsp; N = capture nugget &nbsp;·&nbsp; S = stop &amp; generate</footer>
 </section>
 
 <!-- ── State 3: Report ─────────────────────────────────────────── -->
@@ -127,7 +131,9 @@
 
     <div id="report-links" class="hidden">
       <p class="saved-note">✓ Session saved to <code id="saved-path"></code></p>
+      <p id="report-cost" class="cost-note hidden"></p>
       <a id="open-client" class="big-link" target="_blank" href="#">📄 Open client report</a>
+      <button id="print-report" class="ghost">🖨 Print / save as PDF</button>
       <a id="open-internal" class="big-link secondary" target="_blank" href="#">🔒 Open internal build notes</a>
       <button id="copy-followup" class="ghost hidden">✉ Copy follow-up draft</button>
       <button id="copy-path" class="ghost">Copy client report file path</button>

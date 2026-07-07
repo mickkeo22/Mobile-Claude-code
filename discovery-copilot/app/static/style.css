@@ -136,6 +136,13 @@ summary:hover { color: var(--ink); }
   cursor: pointer;
 }
 
+/* quick-capture bar */
+#capture-bar { margin-top: 12px; }
+#capture-bar input {
+  border-color: var(--yellow); background: rgba(232,185,60,.06);
+  font-size: 14.5px;
+}
+
 /* suggestion cards */
 .suggestions { margin-top: 14px; display: flex; flex-direction: column; gap: 10px; }
 .waiting { color: var(--muted); font-size: 14px; padding: 18px 4px; text-align: center; }
@@ -193,7 +200,9 @@ summary:hover { color: var(--ink); }
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-.saved-note { color: var(--green); font-size: 13px; margin-bottom: 14px; word-break: break-all; }
+.saved-note { color: var(--green); font-size: 13px; margin-bottom: 6px; word-break: break-all; }
+.cost-note { color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+#print-report { width: 100%; margin-top: 10px; }
 .big-link {
   display: block; text-align: center; margin-top: 10px; padding: 15px;
   border-radius: 10px; background: var(--accent); color: #04262b;

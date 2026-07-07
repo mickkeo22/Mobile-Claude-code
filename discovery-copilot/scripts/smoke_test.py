@@ -242,6 +242,7 @@ def t_session_store():
             costs = st._read_json("costs.json", {})
             assert costs["totals"]["input_tokens"] == 2000
             assert costs["calls"][-1]["est_cost_usd"] == 0.0
+            assert st.read_costs_totals()["input_tokens"] == 2000
         finally:
             config.LLM_BACKEND = orig
 
@@ -448,6 +449,7 @@ def t_app_imports():
                    "/api/sessions/{session_id}/generate",
                    "/api/sessions/{session_id}/retranscribe",
                    "/api/sessions/{session_id}/speaker",
+                   "/api/sessions/{session_id}/notable",
                    "/api/sessions/{session_id}/files/{name}"]:
         assert needed in routes, f"missing route {needed}"
     assert "followup.txt" in m.SERVABLE

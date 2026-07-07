@@ -115,13 +115,17 @@ here, not mid-discovery.
 4. **Present.** Open the client report in a new tab and walk the owner
    through it on the spot. If generation fails, the transcript is already
    saved — hit **Retry report**. Never lose a call.
-5. **Follow up.** The report state also has **✉ Copy follow-up draft** — a
-   short recap email (their sharpest pain in their own words, the suggested
-   starting point, a zero-pressure close) saved as `followup.txt`. Paste it
-   into email or text a few hours later.
+5. **Follow up.** The report state also has **🖨 Print / save as PDF** (hand
+   the owner a paper copy on the spot), a session usage line ($0 on the
+   subscription plan), and **✉ Copy follow-up draft** — a short recap email
+   (their sharpest pain in their own words, the suggested starting point, a
+   zero-pressure close) saved as `followup.txt`. Paste it into email or text
+   a few hours later.
 
-**Keyboard:** `Space` dismisses the top suggestion, `S` = stop & generate.
-Both are ignored while you're typing in a form field.
+**Keyboard:** `Space` dismisses the top suggestion, `N` opens a one-line
+"gold nugget" capture (you heard something the model missed — Enter saves it
+into the nuggets list and the report context), `S` = stop & generate. All
+ignored while you're typing in a form field.
 
 Everything is saved per session under `sessions/{timestamp}_{business}/`:
 intake, transcript, coverage, suggestions log, both reports, token costs

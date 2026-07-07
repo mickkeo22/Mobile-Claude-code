@@ -140,6 +140,9 @@ class SessionStore:
         totals["est_cost_usd"] = round(totals.get("est_cost_usd", 0.0) + cost, 6)
         self._write_json("costs.json", costs)
 
+    def read_costs_totals(self) -> dict:
+        return self._read_json("costs.json", {}).get("totals", {})
+
     # ── reports ───────────────────────────────────────────────────
 
     def write_report_files(self, data: dict, client_html: str, internal_md: str) -> None:

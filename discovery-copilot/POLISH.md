@@ -29,15 +29,19 @@ Loop stops when everything below is ☑ and the final UI pass is green.
 
 ## P2 — presentation polish
 
-- [ ] **G. Report-state extras** — Print/save-as-PDF button + one-line session
-      cost/usage summary from `costs.json`.
-- [ ] **H. Quick-capture nugget** — `N` in live state opens a one-line input;
+- [x] **G. Report-state extras** — Print/save-as-PDF button + one-line session
+      cost/usage summary from `costs.json` ($0 wording on subscription).
+- [x] **H. Quick-capture nugget** — `N` in live state opens a one-line input;
       the note joins the gold-nuggets list and the report context.
 
 ## Final gate
 
-- [ ] Playwright pass over all three UI states with the new controls;
-      screenshots delivered. Then the loop stops itself.
+- [x] Playwright pass over all three UI states with the new controls
+      (me-toggle roundtrip, N-key nugget through the real endpoint, report
+      controls + cost line); screenshots delivered. Loop stopped.
+
+**Backlog complete — 2026-07-07.** Restart the loop any time with /loop if
+new items get added here.
 
 ## Out of scope (spec §9)
 
