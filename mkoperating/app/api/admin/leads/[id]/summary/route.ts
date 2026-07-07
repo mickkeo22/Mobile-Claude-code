@@ -33,6 +33,7 @@ export async function POST(_req: Request, { params }: { params: { id: string } }
   });
   if (['new', 'emailed', 'booked'].includes(lead.status)) {
     await updateLead(lead.id, { status: 'call_done' });
+    await logEvent(lead.id, 'status_changed', { from: lead.status, to: 'call_done' });
   }
   await logEvent(lead.id, 'call_summary', { pain: summary.pain_confirmed });
   return NextResponse.json({ call: updated });

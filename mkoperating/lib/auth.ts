@@ -17,7 +17,9 @@ async function hmac(value: string): Promise<string> {
     ['sign']
   );
   const sig = await crypto.subtle.sign('HMAC', key, enc.encode(value));
-  return Buffer.from ? Buffer.from(sig).toString('base64url') : arrayToB64(sig);
+  // Pure Web-API base64url — this code also runs in middleware (edge runtime)
+  // where Node's Buffer is not guaranteed.
+  return arrayToB64(sig);
 }
 
 function arrayToB64(buf: ArrayBuffer): string {

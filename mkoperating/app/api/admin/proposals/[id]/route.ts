@@ -30,6 +30,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     const lead = await getLead(proposal.lead_id);
     if (lead && ['new', 'emailed', 'booked', 'call_done'].includes(lead.status)) {
       await updateLead(lead.id, { status: 'proposal_sent' });
+      await logEvent(lead.id, 'status_changed', { from: lead.status, to: 'proposal_sent' });
     }
   }
   return NextResponse.json({ proposal: updated });

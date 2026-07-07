@@ -55,7 +55,15 @@ export default async function AdminDashboard() {
 
   return (
     <main className="px-4 py-6 sm:px-8">
-      <PageHeader title="Dashboard" sub={`Last ${funnel.days} days of funnel activity`} />
+      <PageHeader title="Dashboard" sub={`Last ${funnel.days} days of funnel activity`}>
+        <a
+          href="/api/admin/digest-test"
+          target="_blank"
+          className="font-display text-sm font-bold text-signal-700 hover:text-ink"
+        >
+          Preview morning digest →
+        </a>
+      </PageHeader>
       <ConfigWarnings />
 
       {/* KPIs */}
