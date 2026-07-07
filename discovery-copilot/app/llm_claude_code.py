@@ -32,6 +32,11 @@ log = logging.getLogger("copilot.llm")
 
 LIVE_TIMEOUT_SECS = 90
 REPORT_TIMEOUT_SECS = 360
+# Structured output is an internal tool call in the SDK, so a run can need
+# more than one turn; with allowed_tools=[] there is nothing to loop on, so
+# this is a safety bound, not a behavior knob. (max_turns=1 starves the
+# structured-output step — found in the live E2E.)
+MAX_TURNS = 4
 _JSON_FENCE = re.compile(r"```(?:json)?\s*(.*?)\s*```", re.DOTALL)
 
 
@@ -79,6 +84,11 @@ class ClaudeCodeLLM:
         self._Options = ClaudeAgentOptions
         self._ResultMessage = ResultMessage
         self._supports_output_format = True  # optimistic; downgraded on TypeError
+        # Claude Code thinks by default; the API-mode path doesn't. Disabling
+        # it matches API behavior and keeps report generation inside the
+        # 2-minute target (thinking tripled output tokens in the live E2E).
+        # The SDK type is a TypedDict, so the literal dict is the value.
+        self._thinking = {"type": "disabled"}
 
     # ── public interface (mirrors llm.LLM) ────────────────────────
 
@@ -110,20 +120,29 @@ class ClaudeCodeLLM:
 
     def _make_options(self, model: str, system: str, output_format: dict | None):
         kwargs = dict(model=model, system_prompt=system,
-                      allowed_tools=[], max_turns=1)
+                      allowed_tools=[], max_turns=MAX_TURNS)
+        if self._thinking is not None:
+            kwargs["thinking"] = self._thinking
         if output_format is not None:
             kwargs["output_format"] = output_format
-        try:
-            return self._Options(**kwargs), True
-        except TypeError as e:
-            if output_format is not None and "output_format" in str(e):
-                # older SDK — remember and prompt for JSON instead
-                self._supports_output_format = False
-                log.warning("installed claude-agent-sdk has no output_format "
-                            "support — falling back to prompt-for-JSON")
-                kwargs.pop("output_format")
-                return self._Options(**kwargs), False
-            raise
+        for _ in range(3):  # drop kwargs an older SDK doesn't know
+            try:
+                return self._Options(**kwargs), "output_format" in kwargs or output_format is None
+            except TypeError as e:
+                msg = str(e)
+                if "output_format" in kwargs and "output_format" in msg:
+                    self._supports_output_format = False
+                    log.warning("installed claude-agent-sdk has no output_format "
+                                "support — falling back to prompt-for-JSON")
+                    kwargs.pop("output_format")
+                elif "thinking" in kwargs and "thinking" in msg:
+                    self._thinking = None
+                    log.info("installed claude-agent-sdk has no thinking option "
+                             "— leaving model default")
+                    kwargs.pop("thinking")
+                else:
+                    raise
+        return self._Options(**kwargs), "output_format" in kwargs
 
     async def _run(self, *, model: str, system: str, prompt: str,
                    output_format: dict | None, tool: dict | None, timeout: float):
@@ -201,8 +220,9 @@ def _usage_of(msg) -> Usage:
     u = getattr(msg, "usage", None)
     if u is None:
         return Usage(0, 0)
-    if isinstance(u, dict):
-        return Usage(int(u.get("input_tokens", 0) or 0),
-                     int(u.get("output_tokens", 0) or 0))
-    return Usage(int(getattr(u, "input_tokens", 0) or 0),
-                 int(getattr(u, "output_tokens", 0) or 0))
+    get = u.get if isinstance(u, dict) else lambda k, d=0: getattr(u, k, d)
+    # count cached prefix reads as input so costs.json reflects real volume
+    inp = (int(get("input_tokens", 0) or 0)
+           + int(get("cache_read_input_tokens", 0) or 0)
+           + int(get("cache_creation_input_tokens", 0) or 0))
+    return Usage(inp, int(get("output_tokens", 0) or 0))

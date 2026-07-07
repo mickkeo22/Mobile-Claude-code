@@ -322,7 +322,9 @@ def t_claude_code_mocked_query():
     def fake_query_returning(msg):
         async def q(*, prompt, options):
             assert options.kw["allowed_tools"] == []
-            assert options.kw["max_turns"] == 1
+            # structured output is an internal tool call — needs >1 turn
+            assert options.kw["max_turns"] >= 2
+            assert options.kw.get("thinking") == {"type": "disabled"}
             yield FakeResult(structured={"decoy": True})  # non-Result messages ignored below
             yield msg
         return q
@@ -331,6 +333,7 @@ def t_claude_code_mocked_query():
         llm = ClaudeCodeLLM.__new__(ClaudeCodeLLM)  # skip real SDK import
         llm._Options = FakeOptions
         llm._supports_output_format = True
+        llm._thinking = {"type": "disabled"}
 
         # A: structured output path
         good = FakeResult(structured={"coverage_updates": [], "suggestions": [],
