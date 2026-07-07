@@ -212,3 +212,4 @@ class Intake(BaseModel):
     meeting_source: str = ""      # walk-in | cold_call | referral | zoom
     notes: str = ""
     audio_source: str = "mic"     # mic | none | upload
+    consultant_speaker: int = 0   # which diarized speaker is Mick (usually greets first)

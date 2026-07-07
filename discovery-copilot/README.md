@@ -99,6 +99,12 @@ here, not mid-discovery.
    - **Move on** flags when an area is covered deeply and others are untouched.
    - A **💡 gold nuggets** list — quotable ammunition for the report.
    - A collapsible **live transcript** (off by default — look at the human).
+     Inside it, an **"I'm speaker"** toggle: tap whichever diarized voice is
+     you and the models see the transcript as Consultant:/Owner:, so
+     "in their own words" quotes always attribute to the owner. Your voice
+     shows as **You** in the pane. (Business and contact names from intake
+     are also sent to Deepgram as key terms, so proper nouns transcribe
+     correctly.)
 3. **Stop & Generate** (big red button, or press **S**). Recording stops,
    and both documents generate — target is under 2 minutes:
    - `report_client.html` — clean, brandable, screen-shareable audit organized
@@ -186,7 +192,9 @@ Prompts are equally editable, in `prompts/`:
   anti-hallucination language rules.
 
 Branding (`branding.json`: logo path, accent color, footer) and pricing
-anchors (`pricing.yaml`) are config files too.
+anchors (`pricing.yaml`) are config files too. Point `logo_path` at a local
+image (e.g. `branding/logo.png`) and it gets base64-embedded into the client
+report, which stays a single self-contained file that prints perfectly.
 
 ---
 

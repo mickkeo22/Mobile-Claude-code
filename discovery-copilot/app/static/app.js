@@ -13,6 +13,8 @@ const S = {
   startedAt: null,
   timerHandle: null,
   clientPath: "",
+  followupUrl: null,
+  consultantSpeaker: 0, // which diarized speaker is Mick
   ws: null,
   state: "intake",
 };
@@ -283,6 +285,8 @@ function restoreLive(snap) {
   S.businessName = snap.business_name;
   S.areas = snap.areas || [];
   S.coverage = snap.coverage || { areas: {}, notable: [] };
+  S.consultantSpeaker = snap.consultant_speaker ?? 0;
+  renderMeToggle();
   S.startedAt = snap.started_at ? snap.started_at * 1000 : Date.now();
   $("live-biz").textContent = S.businessName;
   $("live-overlay").textContent = snap.overlay ? snap.overlay : "core only";
@@ -327,15 +331,43 @@ async function cyclePill(areaId, current) {
   } catch { /* pill will re-sync on next coverage broadcast */ }
 }
 
+function speakerChip(speaker) {
+  return speaker === S.consultantSpeaker ? "You" : "S" + speaker;
+}
+
 function addTranscriptLine(seg) {
   const wrap = $("transcript");
   const div = document.createElement("div");
   div.className = "tr-line spk" + (seg.speaker % 2);
-  div.innerHTML = `<span class="spk">S${seg.speaker}</span>${escapeHtml(seg.text)}`;
+  div.dataset.speaker = seg.speaker;
+  div.innerHTML = `<span class="spk">${speakerChip(seg.speaker)}</span>${escapeHtml(seg.text)}`;
   wrap.appendChild(div);
   wrap.scrollTop = wrap.scrollHeight;
   $("interim").textContent = "";
 }
+
+function renderMeToggle() {
+  document.querySelectorAll(".me-toggle button").forEach((b) => {
+    b.classList.toggle("active", parseInt(b.dataset.me, 10) === S.consultantSpeaker);
+  });
+  document.querySelectorAll("#transcript .tr-line").forEach((line) => {
+    const sp = parseInt(line.dataset.speaker, 10);
+    const chip = line.querySelector(".spk");
+    if (chip && !Number.isNaN(sp)) chip.textContent = speakerChip(sp);
+  });
+}
+
+document.querySelectorAll(".me-toggle button").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    S.consultantSpeaker = parseInt(btn.dataset.me, 10);
+    renderMeToggle();
+    if (S.sessionId) {
+      api(`/api/sessions/${S.sessionId}/speaker`, {
+        method: "POST", body: JSON.stringify({ speaker: S.consultantSpeaker }),
+      }).catch(() => {});
+    }
+  });
+});
 
 function applyAnalysis(msg) {
   S.coverage = msg.coverage || S.coverage;

@@ -33,9 +33,11 @@ class DeepgramLive:
         self,
         on_final: Callable[[dict], Awaitable[None]],
         on_interim: Callable[[str], Awaitable[None]] | None = None,
+        keyterms: list[str] | None = None,
     ):
         self.on_final = on_final
         self.on_interim = on_interim
+        self.keyterms = keyterms or []
         self._ws = None
         self._recv_task: asyncio.Task | None = None
         self._keepalive_task: asyncio.Task | None = None
@@ -47,17 +49,19 @@ class DeepgramLive:
         return self._ws is not None and not self.closed.is_set()
 
     async def connect(self) -> None:
-        params = {
-            "model": config.DEEPGRAM_MODEL,
-            "encoding": "linear16",
-            "sample_rate": str(config.SAMPLE_RATE),
-            "channels": str(config.CHANNELS),
-            "smart_format": "true",
-            "diarize": "true",
-            "interim_results": "true",
-            "punctuate": "true",
-            "vad_events": "false",
-        }
+        params: list[tuple[str, str]] = [
+            ("model", config.DEEPGRAM_MODEL),
+            ("encoding", "linear16"),
+            ("sample_rate", str(config.SAMPLE_RATE)),
+            ("channels", str(config.CHANNELS)),
+            ("smart_format", "true"),
+            ("diarize", "true"),
+            ("interim_results", "true"),
+            ("punctuate", "true"),
+            ("vad_events", "false"),
+        ]
+        from .deepgram_rest import boost_params
+        params.extend(boost_params(config.DEEPGRAM_MODEL, self.keyterms))
         url = f"{config.DEEPGRAM_WS_URL}?{urllib.parse.urlencode(params)}"
         headers = {"Authorization": f"Token {config.DEEPGRAM_API_KEY}"}
         self._ws = await _connect(url, headers)

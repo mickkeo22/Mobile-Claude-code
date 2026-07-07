@@ -119,8 +119,11 @@ class SuggestionEngine:
     # ── the analysis call ─────────────────────────────────────────
 
     def _window_text(self) -> str:
+        from .sessions import speaker_label
+        cs = self.intake.get("consultant_speaker")
         return "\n".join(
-            f"Speaker {s.get('speaker', '?')}: {s.get('text', '')}" for s in self.window
+            f"{speaker_label(s.get('speaker'), cs)}: {s.get('text', '')}"
+            for s in self.window
         )
 
     def _coverage_compact(self) -> dict:

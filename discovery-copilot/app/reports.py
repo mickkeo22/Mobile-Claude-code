@@ -47,12 +47,13 @@ async def generate_reports(
     if not segs:
         raise RuntimeError("no transcript found for this session")
 
-    transcript_text = store.transcript_text(segs)
+    consultant_speaker = intake.get("consultant_speaker")
+    transcript_text = store.transcript_text(segs, consultant_speaker)
     total_words = sum(s.get("words", 0) for s in segs)
 
     await progress("analyzing", "Analyzing conversation…")
     if total_words > config.MAPREDUCE_THRESHOLD_WORDS:
-        transcript_text = await _map_reduce(store, llm, segs)
+        transcript_text = await _map_reduce(store, llm, segs, consultant_speaker)
 
     await progress("drafting", "Drafting report…")
     context = _build_report_context(intake, coverage, transcript_text)
@@ -119,7 +120,8 @@ def _build_report_context(intake: dict, coverage: dict, transcript_text: str) ->
     )
 
 
-async def _map_reduce(store: SessionStore, llm: LLM, segs: list[dict]) -> str:
+async def _map_reduce(store: SessionStore, llm: LLM, segs: list[dict],
+                      consultant_speaker: int | None = None) -> str:
     """Summarize per ~6k-word chunk in parallel, keep quotes + area facts."""
     chunks: list[list[dict]] = [[]]
     count = 0
@@ -132,7 +134,7 @@ async def _map_reduce(store: SessionStore, llm: LLM, segs: list[dict]) -> str:
     chunks = [c for c in chunks if c]
 
     async def summarize(i: int, chunk: list[dict]) -> str:
-        text = store.transcript_text(chunk)
+        text = store.transcript_text(chunk, consultant_speaker)
         try:
             summary, usage = await llm.text_call(
                 model=config.LIVE_MODEL,

@@ -8,9 +8,12 @@ anchors injected from pricing.yaml per effort tier.
 """
 from __future__ import annotations
 
+import base64
 import html
 import json
+import mimetypes
 from datetime import date
+from pathlib import Path
 
 import yaml
 
@@ -54,18 +57,40 @@ def _e(s: str) -> str:
     return html.escape(str(s or ""), quote=True)
 
 
+def logo_src(logo_path: str) -> str | None:
+    """Resolve branding.json's logo_path to something a single-file HTML can
+    show anywhere: local files get base64-inlined (stays print-perfect with
+    no external references); http(s)/data URLs pass through; junk → None."""
+    if not logo_path:
+        return None
+    if logo_path.startswith(("http://", "https://", "data:")):
+        return logo_path
+    p = Path(logo_path)
+    if not p.is_absolute():
+        p = config.BASE_DIR / p
+    if not p.is_file():
+        return None
+    mime = mimetypes.guess_type(p.name)[0] or ""
+    if not mime.startswith("image/"):
+        return None
+    return f"data:{mime};base64,{base64.b64encode(p.read_bytes()).decode()}"
+
+
 # ── Document A: client-facing HTML ────────────────────────────────
 
-def render_client_html(report: AuditReport, intake: dict, report_date: str | None = None) -> str:
-    b = load_branding()
+def render_client_html(report: AuditReport, intake: dict,
+                       report_date: str | None = None,
+                       branding: dict | None = None) -> str:
+    b = branding or load_branding()
     accent = b.get("accent_color", "#0e7490")
     business = intake.get("business_name", "Your Business")
     contact = intake.get("contact_name", "")
     d = report_date or date.today().strftime("%B %d, %Y").replace(" 0", " ")
 
     logo_html = ""
-    if b.get("logo_path"):
-        logo_html = f'<img class="logo" src="{_e(b["logo_path"])}" alt="{_e(b["prepared_by"])}">'
+    src = logo_src(b.get("logo_path", ""))
+    if src:
+        logo_html = f'<img class="logo" src="{_e(src)}" alt="{_e(b["prepared_by"])}">'
 
     heard = "\n".join(f"<li>{_e(x)}</li>" for x in report.what_we_heard)
 

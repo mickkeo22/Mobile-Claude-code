@@ -6,6 +6,7 @@
   "meeting_source": "walk_in",
   "notes": "SYNTHETIC SAMPLE SESSION — fabricated test data. Met Dana at the counter; she mentioned drowning in paperwork and a delivery mix-up that morning.",
   "audio_source": "mic",
+  "consultant_speaker": 0,
   "overlay": "retail",
   "created_at": "2026-07-01T10:15:00"
 }

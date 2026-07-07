@@ -163,6 +163,13 @@ summary:hover { color: var(--ink); }
 /* notable + transcript */
 #notable-list { margin: 8px 0 0 18px; }
 #notable-list li { font-size: 13.5px; color: var(--yellow); margin: 5px 0; line-height: 1.4; }
+.me-toggle { margin-top: 8px; font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.me-toggle button {
+  font-size: 11.5px; font-weight: 700; padding: 3px 10px; border-radius: 6px;
+  background: var(--panel-2); border: 1px solid var(--line); color: var(--muted);
+}
+.me-toggle button.active { border-color: var(--accent); color: var(--accent); }
+.me-hint { font-size: 10.5px; }
 #transcript { margin-top: 8px; max-height: 320px; overflow-y: auto; font-size: 13.5px; line-height: 1.5; }
 .tr-line { margin: 4px 0; }
 .tr-line .spk { color: var(--accent); font-weight: 700; margin-right: 6px; font-size: 11.5px; }

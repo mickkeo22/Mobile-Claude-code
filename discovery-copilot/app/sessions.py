@@ -102,10 +102,12 @@ class SessionStore:
                     continue
         return segs
 
-    def transcript_text(self, segs: list[dict] | None = None) -> str:
+    def transcript_text(self, segs: list[dict] | None = None,
+                        consultant_speaker: int | None = None) -> str:
         segs = self.read_transcript() if segs is None else segs
         return "\n".join(
-            f"[{format_ts(s.get('start', 0))}] Speaker {s.get('speaker', '?')}: {s.get('text', '')}"
+            f"[{format_ts(s.get('start', 0))}] "
+            f"{speaker_label(s.get('speaker'), consultant_speaker)}: {s.get('text', '')}"
             for s in segs
         )
 
@@ -169,3 +171,13 @@ def list_sessions() -> list[dict]:
 def format_ts(seconds: float) -> str:
     seconds = int(seconds or 0)
     return f"{seconds // 60:02d}:{seconds % 60:02d}"
+
+
+def speaker_label(speaker, consultant_speaker: int | None) -> str:
+    """Once Mick marks which diarized speaker he is, transcripts read
+    Consultant:/Owner: — so the models attribute quotes correctly.
+    (Any additional diarized voices collapse into 'Owner' — fine for a
+    discovery conversation.)"""
+    if consultant_speaker is None or speaker is None:
+        return f"Speaker {speaker if speaker is not None else '?'}"
+    return "Consultant" if int(speaker) == int(consultant_speaker) else "Owner"

@@ -18,14 +18,14 @@ Loop stops when everything below is ☑ and the final UI pass is green.
 - [x] **C. Audio rescue** — "Rescue" button per session: re-transcribe
       `audio.wav` via Deepgram prerecorded, rebuild the transcript, then
       generate. Makes the always-written WAV actionable after an outage.
-- [ ] **D. Consultant/owner labeling** — mark which diarized speaker is Mick;
+- [x] **D. Consultant/owner labeling** — mark which diarized speaker is Mick;
       transcripts feed the models as Consultant:/Owner: so "their own words"
-      quotes attribute correctly.
-- [ ] **E. Logo embedding** — base64-inline `branding.json.logo_path` into the
+      quotes attribute correctly. ("I'm speaker" toggle in the transcript pane.)
+- [x] **E. Logo embedding** — base64-inline `branding.json.logo_path` into the
       client report so it stays a single, print-perfect file.
-- [ ] **F. Keyterm boosting** — pass business/contact/industry terms from
-      intake to Deepgram (streaming + prerecorded) so proper nouns transcribe
-      right. Verify exact nova-3 param against Deepgram docs first.
+- [x] **F. Keyterm boosting** — business + contact names from intake sent to
+      Deepgram on streaming, upload, and rescue paths (`keyterm` on
+      nova-3/flux, `keywords` on nova-2 — verified against Deepgram docs).
 
 ## P2 — presentation polish
 

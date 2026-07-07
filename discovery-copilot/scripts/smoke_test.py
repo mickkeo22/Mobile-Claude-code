@@ -136,6 +136,72 @@ def t_deepgram_rest_parsing():
     assert deepgram_rest.to_segments(nosplit)[0]["words"] == 3
 
 
+def t_speaker_labels():
+    from app.sessions import SessionStore, speaker_label
+    assert speaker_label(0, None) == "Speaker 0"
+    assert speaker_label(0, 0) == "Consultant"
+    assert speaker_label(1, 0) == "Owner"
+    assert speaker_label(2, 0) == "Owner"  # extra voices collapse to Owner
+    with tempfile.TemporaryDirectory() as td:
+        st = SessionStore(Path(td) / "20260101_000000_lbl")
+        st.append_segment({"start": 0, "end": 2, "speaker": 0, "text": "hi there", "words": 2})
+        st.append_segment({"start": 2, "end": 5, "speaker": 1, "text": "hello back", "words": 2})
+        txt = st.transcript_text(consultant_speaker=0)
+        assert "Consultant: hi there" in txt and "Owner: hello back" in txt
+        assert "Speaker" not in txt
+    # engine window uses the same labels
+    from app.framework import Framework, fresh_coverage
+    from app.live_engine import SuggestionEngine
+    fw = Framework.load()
+    areas = fw.merged_areas(None)
+    eng = SuggestionEngine(llm=None, areas=areas,
+                           intake={"consultant_speaker": 0},
+                           coverage=fresh_coverage(areas), on_update=None,
+                           log_cycle=lambda r: None, log_cost=lambda *a: None)
+    eng.feed({"start": 0, "end": 3, "speaker": 1, "text": "we lose calls", "words": 3})
+    assert "Owner: we lose calls" in eng._window_text()
+
+
+def t_logo_embedding():
+    from app import report_render
+    from app.schemas import AuditReport
+    sample = BASE_DIR / "sessions" / "_sample"
+    report = AuditReport.model_validate(json.loads((sample / "report_data.json").read_text(encoding="utf-8")))
+    intake = json.loads((sample / "intake.json").read_text(encoding="utf-8"))
+    png = bytes.fromhex(  # minimal valid 1x1 PNG
+        "89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c489"
+        "0000000d4944415478da63fcff9fa10e0003030101f0e6f2f60000000049454e44ae426082")
+    with tempfile.TemporaryDirectory() as td:
+        logo = Path(td) / "logo.png"
+        logo.write_bytes(png)
+        b = {"company_name": "MK", "prepared_by": "MK", "accent_color": "#0e7490",
+             "logo_path": str(logo), "contact_line": "", "footer_note": ""}
+        html = report_render.render_client_html(report, intake, branding=b)
+        assert "data:image/png;base64," in html, "local logo should be inlined"
+        b["logo_path"] = str(Path(td) / "missing.png")
+        html2 = report_render.render_client_html(report, intake, branding=b)
+        assert "<img" not in html2, "missing logo file must not leave a broken img"
+    assert report_render.logo_src("https://example.com/x.png") == "https://example.com/x.png"
+    assert report_render.logo_src("") is None
+
+
+def t_keyterm_boosting():
+    from app.deepgram_rest import boost_params, intake_keyterms
+    terms = intake_keyterms({"business_name": "Hartwell Home Furnishings",
+                             "contact_name": "Dana", "industry": "retail"})
+    assert terms == ["Hartwell Home Furnishings", "Dana"]
+    assert intake_keyterms({"business_name": " ", "contact_name": ""}) == []
+    assert boost_params("nova-3", terms) == [
+        ("keyterm", "Hartwell Home Furnishings"), ("keyterm", "Dana")]
+    assert boost_params("nova-2", ["Dana"]) == [("keywords", "Dana")]
+    assert boost_params("flux-general-en", ["Dana"])[0][0] == "keyterm"
+    assert boost_params("nova-3", []) == []
+    # streaming URL construction embeds repeated keyterm params
+    import urllib.parse
+    q = urllib.parse.urlencode([("model", "nova-3")] + boost_params("nova-3", terms))
+    assert q.count("keyterm=") == 2 and "Hartwell+Home+Furnishings" in q
+
+
 def t_readiness_doctor():
     import launch
     rows = launch.readiness_report(network=False)  # offline: no Deepgram ping
@@ -381,6 +447,7 @@ def t_app_imports():
                    "/api/sessions/{session_id}/stop",
                    "/api/sessions/{session_id}/generate",
                    "/api/sessions/{session_id}/retranscribe",
+                   "/api/sessions/{session_id}/speaker",
                    "/api/sessions/{session_id}/files/{name}"]:
         assert needed in routes, f"missing route {needed}"
     assert "followup.txt" in m.SERVABLE
@@ -393,6 +460,9 @@ if __name__ == "__main__":
     check("pydantic schemas validate live + report payloads", t_schemas)
     check("render sample client HTML + internal MD (no leaks)", t_render_sample_reports)
     check("readiness doctor rows + offline statuses", t_readiness_doctor)
+    check("consultant/owner speaker labeling", t_speaker_labels)
+    check("logo embedding in client report", t_logo_embedding)
+    check("deepgram keyterm/keywords boosting", t_keyterm_boosting)
     check("deepgram prerecorded response parsing", t_deepgram_rest_parsing)
     check("session store round trip + cost logging", t_session_store)
     check("live engine cadence/debounce rules", t_engine_cadence)

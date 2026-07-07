@@ -10,20 +10,45 @@ from . import config
 log = logging.getLogger("copilot.deepgram")
 
 
+def boost_params(model: str, terms: list[str] | None) -> list[tuple[str, str]]:
+    """Vocabulary boosting: nova-3+/flux take repeatable `keyterm` params;
+    nova-2 and earlier use `keywords`. Multi-word phrases are supported."""
+    cleaned = [t.strip() for t in (terms or []) if t and t.strip()]
+    if not cleaned:
+        return []
+    m = (model or "").lower()
+    param = "keyterm" if ("flux" in m or m.startswith("nova-3") or m.startswith("nova-4")) else "keywords"
+    return [(param, t) for t in cleaned[:8]]
+
+
+def intake_keyterms(intake: dict) -> list[str]:
+    """Proper nouns worth boosting: the business and contact names."""
+    out: list[str] = []
+    seen: set[str] = set()
+    for t in (intake.get("business_name", ""), intake.get("contact_name", "")):
+        t = str(t).strip()
+        if t and t.lower() not in seen:
+            seen.add(t.lower())
+            out.append(t)
+    return out
+
+
 async def transcribe_bytes(
     audio: bytes,
     content_type: str = "audio/wav",
     diarize: bool = True,
+    keyterms: list[str] | None = None,
 ) -> dict:
     """Returns the raw Deepgram prerecorded response JSON."""
-    params = {
-        "model": config.DEEPGRAM_MODEL,
-        "smart_format": "true",
-        "punctuate": "true",
-    }
+    params: list[tuple[str, str]] = [
+        ("model", config.DEEPGRAM_MODEL),
+        ("smart_format", "true"),
+        ("punctuate", "true"),
+    ]
     if diarize:
-        params["diarize"] = "true"
-        params["utterances"] = "true"
+        params.append(("diarize", "true"))
+        params.append(("utterances", "true"))
+    params.extend(boost_params(config.DEEPGRAM_MODEL, keyterms))
     async with httpx.AsyncClient(timeout=httpx.Timeout(300.0, connect=15.0)) as client:
         resp = await client.post(
             config.DEEPGRAM_REST_URL,

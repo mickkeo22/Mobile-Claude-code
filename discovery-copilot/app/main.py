@@ -132,7 +132,8 @@ class LiveSession:
                 self._queue.put_nowait(chunk)
 
     def _new_dg(self) -> DeepgramLive:
-        return DeepgramLive(on_final=self._on_final, on_interim=self._on_interim)
+        return DeepgramLive(on_final=self._on_final, on_interim=self._on_interim,
+                            keyterms=deepgram_rest.intake_keyterms(self.intake))
 
     async def _sender(self) -> None:
         while not self.stopping:
@@ -219,6 +220,10 @@ class LiveSession:
 
     # ── manual controls ───────────────────────────────────────────
 
+    def set_consultant_speaker(self, speaker: int) -> None:
+        self.intake["consultant_speaker"] = speaker  # engine shares this dict
+        self.store.write_intake(self.intake)
+
     def set_coverage(self, area: str, status: str) -> None:
         st = self.coverage.setdefault("areas", {}).setdefault(
             area, {"status": "untouched", "evidence": [], "manual": False}
@@ -241,6 +246,7 @@ class LiveSession:
             ],
             "coverage": self.coverage,
             "audio": self.audio_enabled,
+            "consultant_speaker": self.intake.get("consultant_speaker", 0),
         }
 
 
@@ -405,6 +411,27 @@ async def manual_coverage(session_id: str, body: dict) -> JSONResponse:
     return JSONResponse({"error": "session not live"}, status_code=409)
 
 
+@app.post("/api/sessions/{session_id}/speaker")
+async def set_speaker(session_id: str, body: dict) -> JSONResponse:
+    """Mark which diarized speaker is the consultant — transcripts feed the
+    models as Consultant:/Owner: so quote attribution is right."""
+    try:
+        speaker = int(body.get("speaker"))
+    except (TypeError, ValueError):
+        return JSONResponse({"error": "speaker must be an integer"}, status_code=400)
+    live: LiveSession | None = app.state.live
+    if live is not None and live.store.id == session_id:
+        live.set_consultant_speaker(speaker)
+        return JSONResponse({"ok": True})
+    store = SessionStore.open(session_id)
+    if store is None:
+        return JSONResponse({"error": "unknown session"}, status_code=404)
+    intake = store.read_intake()
+    intake["consultant_speaker"] = speaker
+    store.write_intake(intake)
+    return JSONResponse({"ok": True})
+
+
 @app.post("/api/sessions/{session_id}/dismiss")
 async def dismiss_suggestion(session_id: str, body: dict) -> dict:
     store = SessionStore.open(session_id)
@@ -475,7 +502,9 @@ async def upload_audio(session_id: str, file: UploadFile = File(...)) -> JSONRes
     await hub.broadcast({"type": "status", "phase": "transcribing",
                          "detail": "Transcribing uploaded audio…"})
     try:
-        dg = await deepgram_rest.transcribe_bytes(raw, content_type, diarize=True)
+        dg = await deepgram_rest.transcribe_bytes(
+            raw, content_type, diarize=True,
+            keyterms=deepgram_rest.intake_keyterms(store.read_intake()))
     except Exception as e:
         return JSONResponse({"error": f"transcription failed: {e}"}, status_code=502)
     segs = deepgram_rest.to_segments(dg)
@@ -505,8 +534,9 @@ async def retranscribe(session_id: str) -> JSONResponse:
     await hub.broadcast({"type": "status", "phase": "transcribing",
                          "detail": "Re-transcribing saved audio…"})
     try:
-        dg = await deepgram_rest.transcribe_bytes(wav.read_bytes(), "audio/wav",
-                                                  diarize=True)
+        dg = await deepgram_rest.transcribe_bytes(
+            wav.read_bytes(), "audio/wav", diarize=True,
+            keyterms=deepgram_rest.intake_keyterms(store.read_intake()))
     except Exception as e:
         return JSONResponse({"error": f"transcription failed: {e}"}, status_code=502)
     segs = deepgram_rest.to_segments(dg)

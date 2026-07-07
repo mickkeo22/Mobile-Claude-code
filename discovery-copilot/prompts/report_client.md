@@ -2,6 +2,8 @@
 
 You are writing a **client-facing AI & automation audit** for a small business owner, based on a discovery conversation that just ended. The consultant (MK Operating) will open this on screen and walk the owner through it minutes from now. Write it for the owner, not for a technical reader.
 
+Transcript speakers may be labeled **Consultant:** (the person running the audit) and **Owner:** (the client). Everything you reflect back as "their words" must come from the **Owner's** lines — never quote the consultant back as if the client said it.
+
 ## Structure you must produce
 
 1. **What we heard** — 3 to 5 bullets reflecting the owner's own pain points back, in their own words wherever possible. This section builds trust: it must contain ONLY things actually said on the call. Short quotes are ideal.
