@@ -101,6 +101,9 @@ function renderSessionsList(sessions) {
     if (s.has_transcript) {
       acts.push(`<button data-gen="${s.id}" data-name="${escapeHtml(s.business_name)}">${s.has_report ? "Re-gen" : "Generate"}</button>`);
     }
+    if (s.has_audio) {
+      acts.push(`<button data-rescue="${s.id}" data-name="${escapeHtml(s.business_name)}" title="Re-transcribe audio.wav (rescues the call after a transcription outage), then generate">Rescue</button>`);
+    }
     div.innerHTML = `
       <div><div class="nm">${escapeHtml(s.business_name)} ${s.is_sample ? '<span class="sample-tag">SAMPLE</span>' : ""}</div>
       <div class="dt">${escapeHtml(s.created_at || s.id)}</div></div>
@@ -112,6 +115,27 @@ function renderSessionsList(sessions) {
       S.sessionId = btn.dataset.gen;
       S.businessName = btn.dataset.name || btn.dataset.gen;
       startGeneration();
+    });
+  });
+  wrap.querySelectorAll("button[data-rescue]").forEach((btn) => {
+    btn.addEventListener("click", async () => {
+      if (!confirm("Re-transcribe this session's saved audio and regenerate the report?\n(The current transcript is kept as transcript.jsonl.bak.)")) return;
+      S.sessionId = btn.dataset.rescue;
+      S.businessName = btn.dataset.name || btn.dataset.rescue;
+      show("report");
+      $("report-title").textContent = "Rescuing session…";
+      $("report-progress").classList.remove("hidden");
+      $("report-links").classList.add("hidden");
+      $("report-error").classList.add("hidden");
+      $("retry-report").classList.add("hidden");
+      $("report-phase").textContent = "Re-transcribing saved audio…";
+      try {
+        const r = await api(`/api/sessions/${S.sessionId}/retranscribe`, { method: "POST" });
+        $("report-phase").textContent = `Transcribed ${r.words} words — generating…`;
+        startGeneration();
+      } catch (e) {
+        onReportError({ detail: "Rescue failed: " + e.message });
+      }
     });
   });
 }
@@ -436,6 +460,8 @@ function onReportDone(msg) {
   $("open-internal").href = msg.links.internal;
   $("saved-path").textContent = "sessions/" + msg.session_id;
   S.clientPath = msg.links.client_path;
+  S.followupUrl = msg.links.followup || null;
+  $("copy-followup").classList.toggle("hidden", !S.followupUrl);
 }
 
 function onReportError(msg) {
@@ -458,6 +484,18 @@ $("copy-path").addEventListener("click", async () => {
     setTimeout(() => $("copy-done").classList.add("hidden"), 2500);
   } catch {
     prompt("Copy the path:", S.clientPath);
+  }
+});
+
+$("copy-followup").addEventListener("click", async () => {
+  if (!S.followupUrl) return;
+  try {
+    const text = await (await fetch(S.followupUrl)).text();
+    await navigator.clipboard.writeText(text.trim());
+    $("copy-done").classList.remove("hidden");
+    setTimeout(() => $("copy-done").classList.add("hidden"), 2500);
+  } catch (e) {
+    window.open(S.followupUrl, "_blank");
   }
 });
 

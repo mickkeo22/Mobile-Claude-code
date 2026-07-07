@@ -152,6 +152,7 @@ class SessionStore:
             "created_at": self.read_intake().get("created_at", ""),
             "has_transcript": (self.path / "transcript.jsonl").exists(),
             "has_report": (self.path / "report_client.html").exists(),
+            "has_audio": (self.path / "audio.wav").exists(),
             "is_sample": self.id.startswith("_"),
         }
 

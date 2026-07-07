@@ -487,11 +487,47 @@ async def upload_audio(session_id: str, file: UploadFile = File(...)) -> JSONRes
                          "words": sum(s["words"] for s in segs)})
 
 
+@app.post("/api/sessions/{session_id}/retranscribe")
+async def retranscribe(session_id: str) -> JSONResponse:
+    """Audio rescue: rebuild the transcript from the always-written
+    audio.wav via the prerecorded API (e.g. after a mid-call streaming
+    outage), so the session can still generate reports."""
+    store = SessionStore.open(session_id)
+    if store is None:
+        return JSONResponse({"error": "unknown session"}, status_code=404)
+    live: LiveSession | None = app.state.live
+    if live is not None and live.store.id == session_id:
+        return JSONResponse({"error": "stop the live session first"}, status_code=409)
+    wav = store.path / "audio.wav"
+    if not wav.exists():
+        return JSONResponse({"error": "no audio.wav saved for this session"},
+                            status_code=404)
+    await hub.broadcast({"type": "status", "phase": "transcribing",
+                         "detail": "Re-transcribing saved audio…"})
+    try:
+        dg = await deepgram_rest.transcribe_bytes(wav.read_bytes(), "audio/wav",
+                                                  diarize=True)
+    except Exception as e:
+        return JSONResponse({"error": f"transcription failed: {e}"}, status_code=502)
+    segs = deepgram_rest.to_segments(dg)
+    if not segs:
+        return JSONResponse({"error": "no speech found in the saved audio"},
+                            status_code=422)
+    tpath = store.path / "transcript.jsonl"
+    if tpath.exists():  # keep whatever the live stream managed to catch
+        tpath.replace(store.path / "transcript.jsonl.bak")
+    for seg in segs:
+        store.append_segment(seg)
+    return JSONResponse({"ok": True, "segments": len(segs),
+                         "words": sum(s["words"] for s in segs)})
+
+
 # ── session files ─────────────────────────────────────────────────
 
 SERVABLE = {
     "report_client.html": "text/html",
     "report_internal.md": "text/markdown; charset=utf-8",
+    "followup.txt": "text/plain; charset=utf-8",
     "report_data.json": "application/json",
     "transcript.jsonl": "text/plain; charset=utf-8",
     "intake.json": "application/json",

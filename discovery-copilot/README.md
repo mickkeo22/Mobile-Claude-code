@@ -30,6 +30,19 @@ just resize it into a sidebar.
 The app **refuses to start** with a clear, actionable message if anything
 its mode needs is missing.
 
+### First run (and any time you paste a new key)
+
+```bash
+python launch.py --check
+```
+
+The readiness doctor verifies everything end to end — .env, Python deps,
+framework, report renderer, your intelligence backend (Claude Code login or
+API key), a **live Deepgram auth ping**, audio input devices, and the port —
+and prints a ✓/✗ table with the exact fix for anything wrong. Exit code 0
+means you're good to go. `✗` blocks a real call; `!` is a warning (e.g. no
+mic — upload/demo modes still work).
+
 ## Powered by your Claude subscription (default)
 
 By default (`LLM_BACKEND=claude_code` in `.env`) all intelligence — live
@@ -96,6 +109,10 @@ here, not mid-discovery.
 4. **Present.** Open the client report in a new tab and walk the owner
    through it on the spot. If generation fails, the transcript is already
    saved — hit **Retry report**. Never lose a call.
+5. **Follow up.** The report state also has **✉ Copy follow-up draft** — a
+   short recap email (their sharpest pain in their own words, the suggested
+   starting point, a zero-pressure close) saved as `followup.txt`. Paste it
+   into email or text a few hours later.
 
 **Keyboard:** `Space` dismisses the top suggestion, `S` = stop & generate.
 Both are ignored while you're typing in a form field.
@@ -226,8 +243,10 @@ in `sessions/_sample/` — see its README.
 - **Mic test hears nothing** — wrong device selected, or input volume at
   zero. For loopback devices, remember the test only hears *played* audio.
 - **"Transcription dropped — reconnecting"** mid-call — network blip; the
-  app retries with backoff and keeps writing `audio.wav` regardless. Worst
-  case, upload the WAV after the call.
+  app retries with backoff and keeps writing `audio.wav` regardless. After
+  the call, hit **Rescue** next to the session (intake screen → Previous
+  sessions): it re-transcribes the saved WAV and generates the report. The
+  partial live transcript is kept as `transcript.jsonl.bak`.
 - **Report failed** — the transcript is safe on disk; hit *Retry report*.
   Check the terminal for the underlying error.
 - **Anthropic/Claude Code hiccups mid-call** — suggestions silently skip a

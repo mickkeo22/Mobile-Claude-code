@@ -103,6 +103,8 @@ def t_render_sample_reports():
     # internal-only content must never leak into the client doc
     assert "build_hours" not in html and "gun-shy" not in html.lower()
     assert "implementation_path" not in html and "GHL" not in html
+    # the follow-up draft is a separate artifact, not part of the report page
+    assert "Subject:" not in html
     (sample / "report_client.html").write_text(html, encoding="utf-8")
 
     md = report_render.render_internal_md(report, intake, coverage.get("notable", []))
@@ -110,6 +112,12 @@ def t_render_sample_reports():
     assert "Red flags" in md
     assert "Gold nuggets" in md
     (sample / "report_internal.md").write_text(md, encoding="utf-8")
+
+    # follow-up draft: present in the sample data, exported like reports.py does
+    assert report.followup_draft.startswith("Subject:")
+    assert "Dana" in report.followup_draft
+    (sample / "followup.txt").write_text(report.followup_draft.strip() + "\n",
+                                         encoding="utf-8")
 
 
 def t_deepgram_rest_parsing():
@@ -128,6 +136,21 @@ def t_deepgram_rest_parsing():
     assert deepgram_rest.to_segments(nosplit)[0]["words"] == 3
 
 
+def t_readiness_doctor():
+    import launch
+    rows = launch.readiness_report(network=False)  # offline: no Deepgram ping
+    by_name = {name: (status, detail) for status, name, detail in rows}
+    for required in ("config", "python deps", "framework", "renderer",
+                     "intelligence", "deepgram", "audio", "port"):
+        assert required in by_name, f"doctor is missing the {required} row"
+    assert by_name["python deps"][0] == "ok"
+    assert by_name["framework"][0] == "ok" and "8 core areas" in by_name["framework"][1]
+    assert by_name["renderer"][0] == "ok"
+    # dummy key + network skipped → warn, never a false ✓
+    assert by_name["deepgram"][0] == "warn"
+    assert all(s in ("ok", "warn", "fail") for s, _ in by_name.values())
+
+
 def t_session_store():
     from app import config
     from app.sessions import SessionStore
@@ -138,6 +161,9 @@ def t_session_store():
         st.append_segment({"start": 2, "end": 4, "speaker": 1, "text": "hi", "words": 1})
         assert len(st.read_transcript()) == 2
         assert "Speaker 1" in st.transcript_text()
+        assert st.status()["has_audio"] is False
+        (st.path / "audio.wav").write_bytes(b"RIFF")
+        assert st.status()["has_audio"] is True
         orig = config.LLM_BACKEND
         try:
             config.LLM_BACKEND = "api"  # metered mode: real dollar estimates
@@ -354,8 +380,10 @@ def t_app_imports():
     for needed in ["/api/bootstrap", "/api/sessions", "/api/mictest", "/ws",
                    "/api/sessions/{session_id}/stop",
                    "/api/sessions/{session_id}/generate",
+                   "/api/sessions/{session_id}/retranscribe",
                    "/api/sessions/{session_id}/files/{name}"]:
         assert needed in routes, f"missing route {needed}"
+    assert "followup.txt" in m.SERVABLE
 
 
 if __name__ == "__main__":
@@ -364,6 +392,7 @@ if __name__ == "__main__":
     check("sample transcript integrity (~20 min, real word counts)", t_sample_transcript)
     check("pydantic schemas validate live + report payloads", t_schemas)
     check("render sample client HTML + internal MD (no leaks)", t_render_sample_reports)
+    check("readiness doctor rows + offline statuses", t_readiness_doctor)
     check("deepgram prerecorded response parsing", t_deepgram_rest_parsing)
     check("session store round trip + cost logging", t_session_store)
     check("live engine cadence/debounce rules", t_engine_cadence)

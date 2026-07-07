@@ -87,12 +87,17 @@ async def generate_reports(
     )
     store.write_report_files(data.model_dump(), client_html, internal_md)
 
-    return {
+    links = {
         "client": f"/api/sessions/{store.id}/files/report_client.html",
         "internal": f"/api/sessions/{store.id}/files/report_internal.md",
         "client_path": str(store.path / "report_client.html"),
         "internal_path": str(store.path / "report_internal.md"),
     }
+    followup = (data.followup_draft or "").strip()
+    if followup:
+        (store.path / "followup.txt").write_text(followup + "\n", encoding="utf-8")
+        links["followup"] = f"/api/sessions/{store.id}/files/followup.txt"
+    return links
 
 
 def _build_report_context(intake: dict, coverage: dict, transcript_text: str) -> str:

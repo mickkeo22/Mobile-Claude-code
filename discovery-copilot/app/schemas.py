@@ -125,6 +125,7 @@ class AuditReport(BaseModel):
     starting_point: list[StartingPoint]
     next_steps: list[str]
     red_flags: list[str] = Field(default_factory=list)
+    followup_draft: str = ""  # recap email/text Mick pastes after the meeting
 
 
 REPORT_TOOL = {
@@ -144,6 +145,7 @@ REPORT_TOOL = {
             "starting_point",
             "next_steps",
             "red_flags",
+            "followup_draft",
         ],
         "properties": {
             "what_we_heard": {"type": "array", "items": {"type": "string"}},
@@ -194,6 +196,7 @@ REPORT_TOOL = {
             },
             "next_steps": {"type": "array", "items": {"type": "string"}},
             "red_flags": {"type": "array", "items": {"type": "string"}},
+            "followup_draft": {"type": "string"},
         },
     },
 }
