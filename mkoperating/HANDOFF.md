@@ -24,11 +24,18 @@ repo — different GitHub owner). Two ways to deploy; **A is recommended**.
    funnel keeps working even before you set the new env vars (leads just
    queue as "pending" until Supabase/GHL vars are in).
 
-**B. Point Vercel at this repo**
-In the Vercel project → Settings → Git, connect `mickkeo22/Mobile-Claude-code`,
-set **Root Directory** to `mkoperating`, production branch to
-`claude/mk-operating-growth-system-9sj40u`. Fine for a trial run; move to A
-when convenient.
+**B. Stage it first — no terminal needed (do this before A)**
+1. Vercel dashboard → **Add New… → Project** → Import
+   `mickkeo22/Mobile-Claude-code` (install the Vercel GitHub app on that
+   repo if prompted).
+2. Name the project `mkoperating-staging`. Set **Root Directory** to
+   `mkoperating`. Framework auto-detects as Next.js. Deploy.
+3. If asked for a production branch, pick
+   `claude/mk-operating-growth-system-9sj40u` (or merge PR #1 first and
+   use the default branch).
+4. Add the env vars from §2 → Redeploy. You now have the full system live
+   on a `*.vercel.app` URL, completely separate from mkoperating.com.
+   When happy, do **A** for the real cutover and delete (or keep) staging.
 
 ## 2. Environment variables (Vercel → Settings → Environment Variables)
 
