@@ -23,7 +23,7 @@ export default function SampleAuditPage() {
           </h1>
           <p className="mt-4 max-w-xl leading-relaxed text-ink/70">
             Below is an example report for a two-crew tree service —{' '}
-            <strong>{SAMPLE_ANSWERS.business_name}</strong> — built from the same seven questions
+            <strong>{SAMPLE_ANSWERS.business_name}</strong> — built from the same eight questions
             you&apos;d answer. Names changed; the leaks are the ones we see every week. Yours goes
             deeper: every fix is written from your actual answers, and it lands in your inbox too.
           </p>
@@ -45,7 +45,7 @@ export default function SampleAuditPage() {
               Yours will read like this — about your business.
             </h2>
             <p className="mt-3 max-w-xl leading-relaxed text-paper/75">
-              Seven questions, about two minutes, and the plan is on your screen. Free, no call
+              Eight questions, about two minutes, and the plan is on your screen. Free, no call
               required to see it.
             </p>
             <Link href="/audit" className="btn-primary mt-6">

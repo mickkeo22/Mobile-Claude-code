@@ -5,7 +5,7 @@ import { AuditExperience } from '@/components/audit/AuditExperience';
 export const metadata: Metadata = {
   title: 'Your free AI audit',
   description:
-    'Answer seven plain questions and get a tailored audit of what your service business can automate — your biggest leak named, with fixes ranked by impact.',
+    'Answer eight plain questions and get a tailored audit of what your service business can automate — your biggest leak named, with fixes ranked by impact.',
 };
 
 export default function AuditPage() {

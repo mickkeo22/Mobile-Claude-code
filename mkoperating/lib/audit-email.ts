@@ -66,7 +66,11 @@ export function auditEmailHtml(lead: Lead): string {
   });
   const total = audit.buckets.reduce((acc, b) => acc + b.items.length, 0);
   const count = (k: BucketKey) => audit.buckets.find((b) => b.bucket === k)?.items.length ?? 0;
-  const bookUrl = `${env.siteUrl}/book?email=${encodeURIComponent(lead.email)}`;
+  const bookParams = new URLSearchParams({ email: lead.email });
+  const fullName = [lead.first_name, lead.last_name].filter(Boolean).join(' ');
+  if (fullName) bookParams.set('name', fullName);
+  if (lead.phone) bookParams.set('phone', lead.phone);
+  const bookUrl = `${env.siteUrl}/book?${bookParams.toString()}`;
   const reportUrl = `${env.siteUrl}/r/${lead.id}`;
 
   let n = 0;

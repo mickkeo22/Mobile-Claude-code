@@ -4,7 +4,11 @@ export type MultiAnswer = { picks: string[]; detail: string };
 
 export interface WizardAnswers {
   business_name: string;
+  /** Legacy: old wizards collected an optional first name at step 2. */
   first_name?: string;
+  /** Full name + phone, collected at the final "your details" step. */
+  name?: string;
+  phone?: string;
   email: string;
   what_you_do: MultiAnswer;
   lead_flow: MultiAnswer;
@@ -50,6 +54,8 @@ export interface Lead {
   updated_at: string;
   email: string;
   first_name: string | null;
+  last_name: string | null;
+  phone: string | null;
   business_name: string | null;
   answers: Partial<WizardAnswers>;
   audit: AuditResult | null;

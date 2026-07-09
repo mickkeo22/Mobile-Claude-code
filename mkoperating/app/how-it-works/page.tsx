@@ -28,7 +28,7 @@ export default function HowItWorksPage() {
         <section className="container-page pb-12 pt-14 sm:pt-20">
           <p className="eyebrow text-signal-700">How it works</p>
           <h1 className="mt-4 max-w-3xl font-display text-4xl font-extrabold leading-[1.05] text-ink sm:text-5xl">
-            You answer seven questions. We hand you a ranked plan.
+            You answer eight questions. We hand you a ranked plan.
           </h1>
           <p className="mt-5 max-w-2xl text-lg leading-relaxed text-ink/70">
             No discovery calls to sit through, no jargon. The audit reads your actual answers and
@@ -43,7 +43,7 @@ export default function HowItWorksPage() {
               <span className="font-display text-2xl font-extrabold text-ink/30">01</span>
               <div>
                 <h2 className="font-display text-xl font-bold text-ink">Your answers go in</h2>
-                <p className="mt-1 text-ink/70">Seven plain questions about how the business runs.</p>
+                <p className="mt-1 text-ink/70">Eight plain questions about how the business runs.</p>
               </div>
             </div>
 
