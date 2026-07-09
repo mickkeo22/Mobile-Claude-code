@@ -31,6 +31,8 @@ export default async function OnlineReportPage({ params }: { params: { id: strin
             audit={lead.audit}
             businessName={lead.business_name}
             firstName={lead.first_name}
+            lastName={lead.last_name}
+            phone={lead.phone}
             email={lead.email}
             leadId={lead.id}
             createdAt={lead.created_at}

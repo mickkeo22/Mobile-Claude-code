@@ -4,7 +4,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createLead, findLeadBySession, logEvent, updateLead } from '@/lib/db';
-import { isValidEmail } from '@/lib/wizard';
+import { isValidEmail, splitFullName } from '@/lib/wizard';
 import type { WizardAnswers } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -12,7 +12,10 @@ export const runtime = 'nodejs';
 interface LeadUpsertBody {
   session_id?: string;
   email?: string;
-  first_name?: string;
+  /** Full name from the final wizard step; split into first/last on save. */
+  name?: string;
+  phone?: string;
+  first_name?: string; // legacy clients
   business_name?: string;
   answers?: Partial<WizardAnswers>;
   step?: string;
@@ -30,11 +33,17 @@ export async function POST(req: NextRequest) {
   const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
   if (!sessionId) return NextResponse.json({ error: 'session_id required' }, { status: 400 });
 
+  const { first, last } = splitFullName(body.name?.slice(0, 160));
+  const phone =
+    typeof body.phone === 'string' && body.phone.trim() ? body.phone.trim().slice(0, 40) : null;
+
   const existing = await findLeadBySession(sessionId);
 
   if (existing) {
     const updated = await updateLead(existing.id, {
-      first_name: body.first_name?.slice(0, 120) ?? existing.first_name,
+      first_name: first ?? body.first_name?.slice(0, 120) ?? existing.first_name,
+      last_name: last ?? existing.last_name,
+      phone: phone ?? existing.phone,
       business_name: body.business_name?.slice(0, 200) ?? existing.business_name,
       email: email && isValidEmail(email) ? email : existing.email,
       answers: { ...existing.answers, ...(body.answers ?? {}) },
@@ -53,7 +62,9 @@ export async function POST(req: NextRequest) {
   const lead = await createLead({
     email,
     session_id: sessionId,
-    first_name: body.first_name?.slice(0, 120) ?? null,
+    first_name: first ?? body.first_name?.slice(0, 120) ?? null,
+    last_name: last,
+    phone,
     business_name: body.business_name?.slice(0, 200) ?? null,
     answers: body.answers ?? {},
     stage: 'partial',

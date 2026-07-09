@@ -82,10 +82,13 @@ dedicated project: run it there and change the two env vars.
 3. Send yourself a test lead (finish the audit once on the live site, or
    press **Push now** on any lead in `/admin`), then map fields in GHL.
    The payload is flat snake_case, one field per answer:
-   `first_name, email, business_name, what_you_do, lead_flow, tools,
-   losing_money, time_sink, audit_pain, audit_summary, audit_first_move,
-   audit_text` (full audit as one text blob), plus
-   `source, lead_stage, lead_id, admin_url, submitted_at`.
+   `first_name, last_name, phone, email, business_name, what_you_do,
+   lead_flow, tools, losing_money, time_sink, audit_pain, audit_summary,
+   audit_first_move, audit_text` (full audit as one text blob), plus
+   `source, lead_stage, lead_id, admin_url, submitted_at`. Name and phone
+   come from the wizard's final "your details" step, so completed leads
+   arrive as full contacts — map them to the GHL contact's name and phone
+   fields.
 4. Workflow actions: create/update contact → add tag `audit-lead` → add to
    your pipeline → start your nurture sequence.
 5. `lead_stage` is `completed` or `partial` (abandoned mid-wizard, swept
@@ -136,8 +139,10 @@ daily sweeps are an acceptable floor.
 
 ## 7. Things added beyond the brief (all flagged)
 
-- **Early email capture + optional first name** (step 2 of 7) so abandons
-  are saved — partial leads sweep into GHL tagged `lead_stage=partial`.
+- **Early email capture** (step 2 of 8) so abandons are saved — partial
+  leads sweep into GHL tagged `lead_stage=partial`. The final step (8 of 8)
+  collects name + phone + confirms email, so completed leads reach GHL as
+  full contacts and the booking calendar is pre-filled for them.
 - **GHL booking webhook back** (§4b) — closes the analytics loop.
 - **Funnel event tracking** (anonymous, sessionStorage id) powering the
   wizard drop-off chart.

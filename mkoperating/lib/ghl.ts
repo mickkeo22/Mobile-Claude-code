@@ -20,6 +20,8 @@ export function buildGhlPayload(lead: Lead): Record<string, string> {
   return {
     // contact basics
     first_name: lead.first_name || lead.business_name || 'there',
+    last_name: lead.last_name || '',
+    phone: lead.phone || '',
     email: lead.email,
     business_name: lead.business_name || '',
     // one flat field per wizard answer

@@ -1,13 +1,13 @@
 'use client';
 
-// The 7-step audit wizard. Questions and copy match the live funnel; the flow
-// change is that email (+ optional first name) is captured at step 2, and the
-// wizard checkpoints answers to /api/lead after every step so an abandon is
-// still a saved partial lead.
+// The 8-step audit wizard. Questions and copy match the live funnel; the flow
+// changes are that email is captured at step 2 (so an abandon is still a saved
+// partial lead — the wizard checkpoints answers to /api/lead after every step)
+// and the final step collects name + phone so GHL gets a complete contact.
 
 import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { WIZARD_STEPS, isValidEmail, type WizardStep } from '@/lib/wizard';
+import { WIZARD_STEPS, isValidEmail, isValidPhone, splitFullName, type WizardStep } from '@/lib/wizard';
 import type { AuditResult, MultiAnswer, WizardAnswers } from '@/lib/types';
 import { AuditReport } from './AuditReport';
 
@@ -37,7 +37,8 @@ export function AuditExperience() {
   const [leadId, setLeadId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<WizardAnswers>({
     business_name: '',
-    first_name: '',
+    name: '',
+    phone: '',
     email: '',
     what_you_do: emptyMulti(),
     lead_flow: emptyMulti(),
@@ -94,7 +95,8 @@ export function AuditExperience() {
         body: JSON.stringify({
           session_id: sessionId.current,
           email: current.email,
-          first_name: current.first_name,
+          name: current.name,
+          phone: current.phone,
           business_name: current.business_name,
           answers: current,
           step: stepKey,
@@ -111,6 +113,11 @@ export function AuditExperience() {
     }
     if (s.key === 'contact' && !isValidEmail(answers.email)) {
       return s.error ?? 'Please enter a valid email address.';
+    }
+    if (s.key === 'contact_info') {
+      if (!answers.name?.trim()) return 'Please enter your name.';
+      if (!isValidPhone(answers.phone ?? '')) return 'Please enter a valid phone number.';
+      if (!isValidEmail(answers.email)) return 'Please double-check your email address.';
     }
     return '';
   }
@@ -230,7 +237,9 @@ export function AuditExperience() {
         <AuditReport
           audit={audit}
           businessName={answers.business_name}
-          firstName={answers.first_name}
+          firstName={splitFullName(answers.name).first ?? answers.first_name}
+          lastName={splitFullName(answers.name).last}
+          phone={answers.phone}
           email={answers.email}
           leadId={leadId}
           answers={answers}
@@ -317,17 +326,62 @@ export function AuditExperience() {
                 onKeyDown={(e) => e.key === 'Enter' && goNext()}
               />
             </div>
+            {step.note ? (
+              <p className="border-l-2 border-signal pl-3 text-sm text-ink/70">{step.note}</p>
+            ) : null}
+          </div>
+        )}
+
+        {step.kind === 'contact_info' && (
+          <div className="space-y-5">
             <div>
-              <label className="field-label" htmlFor="wizard-name">
-                First name <span className="font-normal normal-case text-ink/50">(optional)</span>
+              <label className="field-label" htmlFor="wizard-fullname">
+                Full name
               </label>
               <input
-                id="wizard-name"
-                autoComplete="given-name"
+                id="wizard-fullname"
+                data-firstfocus
+                autoComplete="name"
                 className="field-input mt-2"
-                placeholder="So we can say hi properly"
-                value={answers.first_name}
-                onChange={(e) => setAnswers({ ...answers, first_name: e.target.value })}
+                placeholder="e.g. Sam Rivera"
+                value={answers.name ?? ''}
+                aria-invalid={Boolean(fieldError)}
+                aria-describedby={fieldError ? 'wizard-error' : undefined}
+                onChange={(e) => setAnswers({ ...answers, name: e.target.value })}
+                onKeyDown={(e) => e.key === 'Enter' && goNext()}
+              />
+            </div>
+            <div>
+              <label className="field-label" htmlFor="wizard-phone">
+                Phone
+              </label>
+              <input
+                id="wizard-phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="tel"
+                className="field-input mt-2"
+                placeholder="(555) 201-4433"
+                value={answers.phone ?? ''}
+                aria-invalid={Boolean(fieldError)}
+                aria-describedby={fieldError ? 'wizard-error' : undefined}
+                onChange={(e) => setAnswers({ ...answers, phone: e.target.value })}
+                onKeyDown={(e) => e.key === 'Enter' && goNext()}
+              />
+            </div>
+            <div>
+              <label className="field-label" htmlFor="wizard-email-confirm">
+                Email
+              </label>
+              <input
+                id="wizard-email-confirm"
+                type="email"
+                inputMode="email"
+                autoComplete="email"
+                className="field-input mt-2"
+                placeholder="you@yourbusiness.com"
+                value={answers.email}
+                onChange={(e) => setAnswers({ ...answers, email: e.target.value })}
                 onKeyDown={(e) => e.key === 'Enter' && goNext()}
               />
             </div>

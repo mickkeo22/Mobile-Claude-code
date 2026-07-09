@@ -75,7 +75,8 @@ function leadLine(l: Lead, extra?: string): string {
   const url = `${env.siteUrl}/admin/leads/${l.id}`;
   const leak = l.audit?.pain_named ? ` — <span style="${S.muted}">${escapeHtml(truncate(l.audit.pain_named, 110))}</span>` : '';
   const tag = l.stage === 'partial' ? ' <strong>(partial)</strong>' : '';
-  return `<div style="${S.row}"><a href="${url}" style="${S.link}">${escapeHtml(name)}</a>${tag}${
+  const phone = l.phone ? ` <span style="${S.muted}">· ${escapeHtml(l.phone)}</span>` : '';
+  return `<div style="${S.row}"><a href="${url}" style="${S.link}">${escapeHtml(name)}</a>${phone}${tag}${
     extra ? ` — <span style="${S.muted}">${escapeHtml(extra)}</span>` : leak
   }</div>`;
 }

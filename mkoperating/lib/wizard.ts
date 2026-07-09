@@ -1,6 +1,7 @@
 // Wizard definition — questions, options and copy match the live funnel,
-// with one flow change: email (+ optional first name) is captured at step 2
-// so mid-wizard abandons are still saved as partial leads.
+// with two flow changes: email is captured at step 2 so mid-wizard abandons
+// are still saved as partial leads, and the final step collects name + phone
+// so GHL receives a complete contact and booking a call is one tap.
 
 export type StepKey =
   | 'business_name'
@@ -9,14 +10,15 @@ export type StepKey =
   | 'lead_flow'
   | 'tools'
   | 'losing_money'
-  | 'time_sink';
+  | 'time_sink'
+  | 'contact_info';
 
 export interface WizardStep {
   key: StepKey;
   label: string; // short eyebrow label
   title: string;
   sub: string;
-  kind: 'text' | 'contact' | 'multi';
+  kind: 'text' | 'contact' | 'multi' | 'contact_info';
   options?: string[];
   placeholder?: string; // text input or textarea placeholder
   note?: string;
@@ -135,12 +137,37 @@ export const WIZARD_STEPS: WizardStep[] = [
     placeholder: 'What keeps you off the truck or up at night…',
     note: 'Pick what fits, or tell us in your own words.',
   },
+  {
+    key: 'contact_info',
+    label: 'Your details',
+    title: 'Last step — who should we prepare this for?',
+    sub: 'Your audit gets your name on it, and booking a call takes one tap — everything is pre-filled.',
+    kind: 'contact_info',
+    note: 'Your phone is only used if you book a call — no cold calls, no spam, ever.',
+    error: 'Please fill in your name, phone, and a valid email.',
+  },
 ];
 
 export const MULTI_KEYS = ['what_you_do', 'lead_flow', 'tools', 'losing_money', 'time_sink'] as const;
 
 export function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim());
+}
+
+/** Lenient phone check: 7–15 digits, common punctuation allowed. */
+export function isValidPhone(phone: string): boolean {
+  const trimmed = phone.trim();
+  if (!/^[\d\s()+.\-]+$/.test(trimmed)) return false;
+  const digits = trimmed.replace(/\D/g, '');
+  return digits.length >= 7 && digits.length <= 15;
+}
+
+/** "Sam J Rivera" → { first: "Sam", last: "J Rivera" } — GHL wants both. */
+export function splitFullName(name?: string | null): { first: string | null; last: string | null } {
+  const clean = (name ?? '').trim().replace(/\s+/g, ' ');
+  if (!clean) return { first: null, last: null };
+  const [first, ...rest] = clean.split(' ');
+  return { first, last: rest.length ? rest.join(' ') : null };
 }
 
 // The three lanes every audit item is sorted into (colors from the live site).

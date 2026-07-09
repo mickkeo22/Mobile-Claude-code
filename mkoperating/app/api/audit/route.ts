@@ -19,7 +19,7 @@ import {
 } from '@/lib/db';
 import { pushLeadToGhl } from '@/lib/ghl';
 import { sendAuditReportEmail } from '@/lib/audit-email';
-import { isValidEmail } from '@/lib/wizard';
+import { isValidEmail, splitFullName } from '@/lib/wizard';
 import type { Lead, WizardAnswers } from '@/lib/types';
 
 export const runtime = 'nodejs';
@@ -70,13 +70,17 @@ export async function POST(req: NextRequest) {
   const auditText = toAuditText(audit, answers.business_name);
 
   // 2) Durable save (upsert onto the partial lead when we have one).
+  const { first, last } = splitFullName(answers.name);
+  const phone = answers.phone?.trim().slice(0, 40) || null;
   let lead: Lead | null = null;
   try {
     const existing = sessionId ? await findLeadBySession(sessionId) : null;
     if (existing) {
       lead = await updateLead(existing.id, {
         email: answers.email.trim().toLowerCase(),
-        first_name: answers.first_name || existing.first_name,
+        first_name: first ?? answers.first_name ?? existing.first_name,
+        last_name: last ?? existing.last_name,
+        phone: phone ?? existing.phone,
         business_name: answers.business_name,
         answers,
         audit,
@@ -86,7 +90,9 @@ export async function POST(req: NextRequest) {
     } else {
       lead = await createLead({
         email: answers.email,
-        first_name: answers.first_name || null,
+        first_name: first ?? answers.first_name ?? null,
+        last_name: last,
+        phone,
         business_name: answers.business_name,
         answers,
         audit,

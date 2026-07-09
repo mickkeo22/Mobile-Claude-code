@@ -17,6 +17,8 @@ interface AuditReportProps {
   audit: AuditResult;
   businessName?: string | null;
   firstName?: string | null;
+  lastName?: string | null;
+  phone?: string | null;
   email?: string;
   leadId?: string | null;
   createdAt?: string;
@@ -36,6 +38,21 @@ const SECTION_ORDER: { id: string; label: string; bucket?: BucketKey }[] = [
   { id: 'first-move', label: '05 First move' },
 ];
 
+function bookHref(
+  email?: string,
+  firstName?: string | null,
+  lastName?: string | null,
+  phone?: string | null
+): string {
+  const params = new URLSearchParams();
+  if (email) params.set('email', email);
+  const name = [firstName, lastName].filter(Boolean).join(' ');
+  if (name) params.set('name', name);
+  if (phone) params.set('phone', phone);
+  const qs = params.toString();
+  return qs ? `/book?${qs}` : '/book';
+}
+
 function toldUsChips(answers?: Partial<WizardAnswers>): string[] {
   if (!answers) return [];
   const multi = (a?: MultiAnswer) => a?.picks ?? [];
@@ -51,6 +68,8 @@ export function AuditReport({
   audit,
   businessName,
   firstName,
+  lastName,
+  phone,
   email,
   leadId,
   createdAt,
@@ -369,10 +388,15 @@ export function AuditReport({
             </p>
             {showBooking ? (
               <div className="no-print mt-5 rounded-xl bg-paper p-2 sm:p-4">
-                <GHLCalendarEmbed prefillEmail={email} />
+                <GHLCalendarEmbed
+                  prefillEmail={email}
+                  prefillFirstName={firstName ?? undefined}
+                  prefillLastName={lastName ?? undefined}
+                  prefillPhone={phone ?? undefined}
+                />
               </div>
             ) : (
-              <a href={`/book${email ? `?email=${encodeURIComponent(email)}` : ''}`} className="btn-primary mt-5">
+              <a href={bookHref(email, firstName, lastName, phone)} className="btn-primary mt-5">
                 Get your questions answered — free →
               </a>
             )}

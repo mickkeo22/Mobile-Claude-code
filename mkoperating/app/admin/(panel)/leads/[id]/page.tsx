@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Mail } from 'lucide-react';
+import { ArrowLeft, Mail, Phone } from 'lucide-react';
 import { getCallForLead, getLead, getProposalForLead, listEvents } from '@/lib/db';
 import { shortDate } from '@/lib/format';
 import { StatusControl } from '@/components/admin/StatusControl';
@@ -71,13 +71,23 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
             {lead.business_name || lead.email}
           </h1>
           <p className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-ink/60">
-            {lead.first_name ? <span>{lead.first_name}</span> : null}
+            {lead.first_name ? (
+              <span>{[lead.first_name, lead.last_name].filter(Boolean).join(' ')}</span>
+            ) : null}
             <a
               href={`mailto:${lead.email}`}
               className="inline-flex items-center gap-1 font-medium text-signal-700 hover:text-ink"
             >
               <Mail className="h-3.5 w-3.5" /> {lead.email}
             </a>
+            {lead.phone ? (
+              <a
+                href={`tel:${lead.phone}`}
+                className="inline-flex items-center gap-1 font-medium text-signal-700 hover:text-ink"
+              >
+                <Phone className="h-3.5 w-3.5" /> {lead.phone}
+              </a>
+            ) : null}
             <span>captured {shortDate(lead.created_at)}</span>
             {lead.stage === 'partial' ? (
               <span className="rounded-full bg-ink/10 px-2 py-0.5 text-[0.65rem] font-bold uppercase text-ink/50">
@@ -144,6 +154,8 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
                 audit={lead.audit}
                 businessName={lead.business_name}
                 firstName={lead.first_name}
+                lastName={lead.last_name}
+                phone={lead.phone}
                 email={lead.email}
                 leadId={lead.id}
                 createdAt={lead.created_at}

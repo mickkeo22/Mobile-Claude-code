@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { SiteFooter, SiteHeader } from '@/components/site/SiteChrome';
 import { GHLCalendarEmbed } from '@/components/audit/GHLCalendarEmbed';
+import { splitFullName } from '@/lib/wizard';
 
 export const metadata: Metadata = {
   title: 'Book a call',
@@ -10,8 +11,16 @@ export const metadata: Metadata = {
   robots: { index: false, follow: true },
 };
 
-export default function BookPage({ searchParams }: { searchParams: { email?: string } }) {
+export default function BookPage({
+  searchParams,
+}: {
+  searchParams: { email?: string; name?: string; phone?: string };
+}) {
   const email = typeof searchParams.email === 'string' ? searchParams.email : undefined;
+  const phone = typeof searchParams.phone === 'string' ? searchParams.phone : undefined;
+  const { first, last } = splitFullName(
+    typeof searchParams.name === 'string' ? searchParams.name : null
+  );
 
   return (
     <>
@@ -28,7 +37,12 @@ export default function BookPage({ searchParams }: { searchParams: { email?: str
           </p>
 
           <div className="card mt-8 !p-3 sm:!p-5">
-            <GHLCalendarEmbed prefillEmail={email} />
+            <GHLCalendarEmbed
+              prefillEmail={email}
+              prefillFirstName={first ?? undefined}
+              prefillLastName={last ?? undefined}
+              prefillPhone={phone}
+            />
           </div>
 
           <p className="mt-6 text-ink/70">

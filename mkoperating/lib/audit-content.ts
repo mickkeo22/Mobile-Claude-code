@@ -20,7 +20,7 @@ export function answersToText(answers: Partial<WizardAnswers>): string {
   };
   return [
     `Business name: ${answers.business_name || '(not given)'}`,
-    `Owner first name: ${answers.first_name || '(not given)'}`,
+    `Owner name: ${answers.name || answers.first_name || '(not given)'}`,
     `Email: ${answers.email || '(not given)'}`,
     multi('What they do', answers.what_you_do),
     multi('What happens when a new lead reaches out', answers.lead_flow),

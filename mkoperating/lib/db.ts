@@ -105,6 +105,8 @@ export async function createLead(fields: Partial<Lead> & { email: string }): Pro
     updated_at: now(),
     email: fields.email.trim().toLowerCase(),
     first_name: fields.first_name ?? null,
+    last_name: fields.last_name ?? null,
+    phone: fields.phone ?? null,
     business_name: fields.business_name ?? null,
     answers: fields.answers ?? {},
     audit: fields.audit ?? null,
