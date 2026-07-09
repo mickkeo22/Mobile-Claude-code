@@ -14,6 +14,7 @@ export async function sendEmail(opts: {
   html: string;
   text?: string;
   to?: string;
+  from?: string;
 }): Promise<{ ok: boolean; error?: string }> {
   if (!env.resendKey) return { ok: false, error: 'RESEND_API_KEY not configured' };
   const to = opts.to || env.digestTo;
@@ -26,7 +27,7 @@ export async function sendEmail(opts: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: env.digestFrom,
+        from: opts.from || env.digestFrom,
         to: [to],
         subject: opts.subject,
         html: opts.html,

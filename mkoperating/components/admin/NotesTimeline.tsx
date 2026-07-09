@@ -10,6 +10,8 @@ const EVENT_LABEL: Record<LeadEventType, string> = {
   step_saved: 'Wizard step saved',
   audit_generated: 'Audit generated',
   audit_failed: 'Audit generation failed',
+  audit_emailed: 'Report emailed to lead',
+  audit_email_failed: 'Report email failed',
   ghl_push_ok: 'Pushed to GHL',
   ghl_push_failed: 'GHL push failed',
   ghl_push_skipped: 'GHL push deferred',
@@ -26,6 +28,8 @@ const EVENT_LABEL: Record<LeadEventType, string> = {
 
 const DOT: Partial<Record<LeadEventType, string>> = {
   audit_generated: 'bg-signal',
+  audit_emailed: 'bg-emerald-500',
+  audit_email_failed: 'bg-red-500',
   ghl_push_failed: 'bg-red-500',
   audit_failed: 'bg-red-500',
   ghl_push_ok: 'bg-emerald-500',

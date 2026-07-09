@@ -39,6 +39,13 @@ export const env = {
   get digestFrom() {
     return process.env.DIGEST_EMAIL_FROM || 'MK Operating <onboarding@resend.dev>';
   },
+  /** Sender for lead-facing audit report emails. Deliberately has NO
+      resend.dev fallback: Resend's test sender can't reach arbitrary
+      recipients, so audit emails stay off until a verified-domain sender
+      (e.g. "MK Operating <audit@mkoperating.com>") is configured. */
+  get auditEmailFrom() {
+    return process.env.AUDIT_EMAIL_FROM || '';
+  },
   get siteUrl() {
     return (process.env.NEXT_PUBLIC_SITE_URL || 'https://mkoperating.com').replace(/\/$/, '');
   },

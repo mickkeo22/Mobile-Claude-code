@@ -50,6 +50,7 @@ export function toAuditText(audit: AuditResult, businessName?: string | null): s
       lines.push(`* ${item.title} [${item.impact}]`);
       lines.push(`  What it is: ${item.what}`);
       lines.push(`  How it helps: ${item.how}`);
+      if (item.rollout) lines.push(`  What getting it looks like: ${item.rollout}`);
     }
   }
   lines.push('');
@@ -102,18 +103,24 @@ export const SAMPLE_AUDIT: AuditResult = {
           what: 'When a call rings out, the caller instantly gets a text from your business number: "Up a tree right now — how can we help?"',
           impact: 'Recovers 2–5 missed jobs a month',
           how: 'You said you miss calls on the job and some leads slip through. This catches them the moment it happens instead of that night.',
+          rollout:
+            'We set it up on your existing business number — you approve the message wording, we flip it on. Nothing changes about how you answer calls; it only fires when you can’t. Live within the week.',
         },
         {
           title: 'Estimate follow-up sequence',
           what: 'Every quote you send gets an automatic, polite follow-up by text and email on day 2, day 5, and day 10 until they answer.',
           impact: 'Closes 10–20% more of quotes you already wrote',
           how: 'You quote jobs and never hear back. Most of those homeowners just got busy — a nudge on day 2 wins the ones a competitor would have taken.',
+          rollout:
+            'You keep quoting exactly how you do today; we wire the follow-ups behind it. You approve the three messages once, and every quote after that gets the sequence automatically. The moment they reply, it stops.',
         },
         {
           title: 'Review engine',
           what: 'After each finished job, the customer gets one text asking for a Google review, with a direct link.',
           impact: 'Steady 5-star reviews without asking in person',
           how: 'You flagged thin reviews. Tree work photographs well and happy customers leave reviews when it takes one tap.',
+          rollout:
+            'We connect it to your Google Business Profile and set the ask to go out a few hours after you mark a job done. You’ll see the first new reviews within a couple of weeks of turning it on.',
         },
       ],
     },
@@ -125,12 +132,16 @@ export const SAMPLE_AUDIT: AuditResult = {
           what: 'We watch your QuickBooks invoices and run the reminder cadence on overdue ones — friendly, firm, consistent.',
           impact: 'Saves ~3 hrs/week and shortens time-to-paid',
           how: 'Chasing payments is on your time-sink list. You stay the good guy; the system plays bad cop.',
+          rollout:
+            'One-time read-only connection to your QuickBooks, then we run the cadence weekly. You get a short note whenever something needs your call — everything else just happens.',
         },
         {
           title: 'Weekly numbers snapshot',
           what: 'Every Monday you get one text: jobs booked, quotes outstanding, invoices overdue, reviews gained.',
           impact: 'The whole business on one screen, weekly',
           how: 'You run on your phone and QuickBooks. This pulls the numbers you actually steer by into one glance.',
+          rollout:
+            'Rides on the same QuickBooks connection as the invoice chasing — no extra setup on your side. First snapshot lands the Monday after we switch it on.',
         },
       ],
     },
@@ -142,6 +153,8 @@ export const SAMPLE_AUDIT: AuditResult = {
           what: 'A simple form on your site: homeowner uploads photos of the tree, you quote simple jobs from your phone without driving out.',
           impact: 'Cuts drive-time on small quotes to zero',
           how: 'Quotes and estimates eat your week. Half your small jobs can be priced from four photos — this gets them to you without a site visit.',
+          rollout:
+            'We build the form to match how you price (tree size, access, haul-away), put it on your site, and route submissions straight to your phone. One-time build — typically ready inside two weeks.',
         },
       ],
     },

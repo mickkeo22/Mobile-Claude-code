@@ -4,6 +4,7 @@ import { dashboardData } from '@/lib/analytics';
 import { storageMode } from '@/lib/db';
 import { env } from '@/lib/env';
 import { emailConfigured } from '@/lib/email';
+import { auditEmailEnabled } from '@/lib/audit-email';
 import { timeAgo } from '@/lib/format';
 import { KpiTile, PageHeader, StatusPill, EmptyState } from '@/components/admin/ui';
 
@@ -30,6 +31,12 @@ function ConfigWarnings() {
     warnings.push({
       key: 'email',
       text: 'Resend is not configured (RESEND_API_KEY / DIGEST_EMAIL_TO) — the morning digest is skipped.',
+    });
+  }
+  if (!auditEmailEnabled()) {
+    warnings.push({
+      key: 'audit-email',
+      text: 'Audit report emails are OFF — leads see their report on-page but don’t get the email copy. Verify mkoperating.com in Resend, then set AUDIT_EMAIL_FROM (e.g. "MK Operating <audit@mkoperating.com>").',
     });
   }
   if (!warnings.length) return null;
