@@ -115,6 +115,14 @@ export const SAMPLE_AUDIT: AuditResult = {
             'You keep quoting exactly how you do today; we wire the follow-ups behind it. You approve the three messages once, and every quote after that gets the sequence automatically. The moment they reply, it stops.',
         },
         {
+          title: 'Database reactivation',
+          what: 'One short text campaign to every past customer already sitting in your QuickBooks — a friendly check-in with a timely reason to book: storm-season trims, spring cleanups, that stump you left behind.',
+          impact: 'Typically books 5–15 jobs from the list you already own',
+          how: 'Two crews’ worth of finished jobs means hundreds of homeowners who already trust you. They don’t need convincing — they need a nudge at the right season, and it costs nothing in new-lead spend.',
+          rollout:
+            'We pull the list from your QuickBooks, you approve one message, and we send in batches so your calendar doesn’t flood. Runs from our pre-built campaign — first bookings usually land the same week.',
+        },
+        {
           title: 'Review engine',
           what: 'After each finished job, the customer gets one text asking for a Google review, with a direct link.',
           impact: 'Steady 5-star reviews without asking in person',

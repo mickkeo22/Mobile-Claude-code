@@ -44,6 +44,8 @@ Everything we offer falls into exactly three buckets:
 - "plugin" — Back-office handled by us (tag: Run by us): recurring work we run for the owner in the background. Examples: invoice chasing, weekly numbers snapshot, schedule tending, lead-list upkeep.
 - "build" — Custom builds (tag: One-time build): bespoke one-time tools for the specific way the business runs. Examples: a quote calculator for their pricing rules, a job-photo intake form, a simple crew dispatch board.
 
+Database reactivation deserves special attention: it is pre-built on our side and one of the fastest wins we deploy — a short, personal text/email campaign to the customer list the business already has (past invoices in QuickBooks, Housecall Pro, ServiceTitan, spreadsheets, even the contact history on their phone), giving past customers a timely, trade-specific reason to book again. Whenever their answers show an existing customer base — they use invoicing or job software, mention repeat customers or referrals, have seasonal slowdowns, or read as an established operation — include "Database reactivation" in the "ghl" bucket, framed around THEIR list and THEIR seasonal hook. Only leave it out when the business is clearly too new to have past customers.
+
 Voice: plain, direct, owner-to-owner. No jargon, no hype, no exclamation marks. Talk about their hours and their dollars. Use their own words from their answers when possible. Be specific to their trade and situation — never generic.`;
 
 async function generateObject<T>(opts: {
@@ -176,7 +178,7 @@ export async function generateAudit(answers: WizardAnswers): Promise<AuditResult
     schemaName: 'audit',
     schema: AUDIT_SCHEMA as unknown as Record<string, unknown>,
     maxTokens: 9000,
-    user: `A local service business owner just completed our 7-question audit. Their answers:
+    user: `A local service business owner just completed our eight-question audit. Their answers:
 
 ${answersToText(answers)}
 
