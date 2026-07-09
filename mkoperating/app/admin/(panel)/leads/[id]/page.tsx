@@ -8,7 +8,7 @@ import { GhlPanel } from '@/components/admin/GhlPanel';
 import { NotesTimeline } from '@/components/admin/NotesTimeline';
 import { CopilotPanel } from '@/components/admin/CopilotPanel';
 import { ProposalPanel } from '@/components/admin/ProposalPanel';
-import { AuditResults } from '@/components/audit/AuditResults';
+import { AuditReport } from '@/components/audit/AuditReport';
 import { WIZARD_STEPS } from '@/lib/wizard';
 import type { MultiAnswer } from '@/lib/types';
 
@@ -129,9 +129,28 @@ export default async function LeadDetailPage({ params }: { params: { id: string 
 
           {/* Audit */}
           <section>
-            <h2 className="mb-3 font-display text-lg font-extrabold text-ink">Their audit</h2>
+            <h2 className="mb-3 font-display text-lg font-extrabold text-ink">
+              Their audit
+              <a
+                href={`/r/${lead.id}`}
+                target="_blank"
+                className="ml-3 align-middle font-display text-xs font-bold text-signal-700 hover:text-ink"
+              >
+                open their report →
+              </a>
+            </h2>
             {lead.audit ? (
-              <AuditResults audit={lead.audit} showBooking={false} compact />
+              <AuditReport
+                audit={lead.audit}
+                businessName={lead.business_name}
+                firstName={lead.first_name}
+                email={lead.email}
+                leadId={lead.id}
+                createdAt={lead.created_at}
+                answers={lead.answers}
+                showBooking={false}
+                navTop="top-0"
+              />
             ) : (
               <p className="rounded-xl border border-dashed border-ink/20 bg-white/60 p-6 text-sm text-ink/50">
                 No audit yet — they left before finishing the wizard.

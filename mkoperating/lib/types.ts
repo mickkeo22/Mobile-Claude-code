@@ -20,6 +20,9 @@ export interface AuditItem {
   what: string; // "What it is"
   how: string; // "How it helps your business"
   impact: string; // e.g. "Saves ~5 hrs/week"
+  /** "What getting it looks like" — setup, what we need from them, when it's live.
+      Optional so audits stored before this field existed still render. */
+  rollout?: string;
 }
 
 export interface AuditResult {
@@ -66,6 +69,8 @@ export type LeadEventType =
   | 'step_saved'
   | 'audit_generated'
   | 'audit_failed'
+  | 'audit_emailed'
+  | 'audit_email_failed'
   | 'ghl_push_ok'
   | 'ghl_push_failed'
   | 'ghl_push_skipped'

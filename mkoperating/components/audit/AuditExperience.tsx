@@ -9,7 +9,7 @@ import Link from 'next/link';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { WIZARD_STEPS, isValidEmail, type WizardStep } from '@/lib/wizard';
 import type { AuditResult, MultiAnswer, WizardAnswers } from '@/lib/types';
-import { AuditResults } from './AuditResults';
+import { AuditReport } from './AuditReport';
 
 type Phase = 'wizard' | 'generating' | 'results' | 'error';
 
@@ -34,6 +34,7 @@ export function AuditExperience() {
   const [error, setError] = useState('');
   const [fieldError, setFieldError] = useState('');
   const [audit, setAudit] = useState<AuditResult | null>(null);
+  const [leadId, setLeadId] = useState<string | null>(null);
   const [answers, setAnswers] = useState<WizardAnswers>({
     business_name: '',
     first_name: '',
@@ -150,8 +151,9 @@ export function AuditExperience() {
         const body = await res.json().catch(() => ({}));
         throw new Error(body.error || 'Something went wrong building your audit. Please try again.');
       }
-      const body = (await res.json()) as { audit: AuditResult };
+      const body = (await res.json()) as { audit: AuditResult; lead_id?: string | null };
       setAudit(body.audit);
+      setLeadId(body.lead_id ?? null);
       setPhase('results');
       window.scrollTo({ top: 0, behavior: 'smooth' });
     } catch (e) {
@@ -225,7 +227,16 @@ export function AuditExperience() {
         <p className="sr-only" role="status">
           Your audit is ready.
         </p>
-        <AuditResults audit={audit} prefillEmail={answers.email} />
+        <AuditReport
+          audit={audit}
+          businessName={answers.business_name}
+          firstName={answers.first_name}
+          email={answers.email}
+          leadId={leadId}
+          answers={answers}
+          showBooking
+          navTop="top-16"
+        />
       </div>
     );
   }

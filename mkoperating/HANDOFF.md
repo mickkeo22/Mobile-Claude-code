@@ -47,8 +47,9 @@ repo — different GitHub owner). Two ways to deploy; **A is recommended**.
 | `ADMIN_PASSWORD` | ✅ | Pick a long one. This is the `/admin` login. |
 | `CRON_SECRET` | ✅ | Any long random string. Vercel automatically sends it to the cron endpoints. |
 | `GHL_WEBHOOK_URL` | strongly recommended | See §4 — created inside GHL. Until set, leads store durably and queue as "pending"; the admin shows a banner. **This fixes the old silent-skip bug.** |
-| `RESEND_API_KEY` | recommended | resend.com → API Keys (free tier). Powers the morning digest. |
+| `RESEND_API_KEY` | recommended | resend.com → API Keys (free tier). Powers the morning digest + audit report emails. |
 | `DIGEST_EMAIL_TO` | recommended | `keoughmick768@gmail.com` |
+| `AUDIT_EMAIL_FROM` | recommended | Turns ON the professional audit-report email to every lead. First verify mkoperating.com in Resend (Domains → Add Domain → add the two DNS records at your registrar, ~5 min), then set e.g. `MK Operating <audit@mkoperating.com>`. Until set, leads still get the on-page report + `/r/<id>` link; no email goes out. |
 | `GHL_BOOKING_TOKEN` | optional | Any random string — enables auto-"booked" status, see §4b. |
 | `NEXT_PUBLIC_SITE_URL` | optional | Defaults to `https://mkoperating.com`. |
 

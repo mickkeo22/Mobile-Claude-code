@@ -121,7 +121,7 @@ const AUDIT_SCHEMA = {
     summary: {
       type: 'string',
       description:
-        'Two to four sentences summarizing what their answers show and what the plan below does about it. Written to the owner.',
+        'Three to five sentences summarizing what their answers show and what the plan below does about it, in a logical order (what is healthy, where it leaks, what the plan does first and why). Written to the owner.',
     },
     first_move: {
       type: 'string',
@@ -131,7 +131,7 @@ const AUDIT_SCHEMA = {
     buckets: {
       type: 'array',
       description:
-        'The ranked plan, grouped by bucket, ordered by impact (biggest leak first). Include only buckets that have at least one item. 2-3 items for ghl, 1-2 for plugin, 0-2 for build.',
+        'The ranked plan, grouped by bucket, ordered by impact (biggest leak first). Include only buckets that have at least one item. Aim for 7-9 fixes total when their answers support them (3-4 for ghl, 2-3 for plugin, 1-2 for build) — but never pad: fewer honest fixes beat more generic ones.',
       items: {
         type: 'object',
         additionalProperties: false,
@@ -143,18 +143,23 @@ const AUDIT_SCHEMA = {
             items: {
               type: 'object',
               additionalProperties: false,
-              required: ['title', 'what', 'how', 'impact'],
+              required: ['title', 'what', 'how', 'impact', 'rollout'],
               properties: {
                 title: { type: 'string', description: 'Short name of the fix, e.g. "Missed-call text-back"' },
-                what: { type: 'string', description: '"What it is" — 1-2 plain sentences.' },
+                what: { type: 'string', description: '"What it is" — 2-3 plain sentences.' },
                 how: {
                   type: 'string',
                   description:
-                    '"How it helps your business" — 1-2 sentences tied to THEIR answers (their trade, their leak, their tools).',
+                    '"How it helps your business" — 2-3 sentences tied to THEIR answers (their trade, their leak, their tools).',
                 },
                 impact: {
                   type: 'string',
                   description: 'Short impact estimate, e.g. "Recovers 2-5 missed jobs a month" or "Saves ~4 hrs/week".',
+                },
+                rollout: {
+                  type: 'string',
+                  description:
+                    '"What getting it looks like" — 2-3 sentences: how it gets set up, the little we need from them, and roughly when it is live. Concrete and reassuring, e.g. "We set this up on your existing business number — you approve the message wording, we flip it on. Live within the week."',
                 },
               },
             },
@@ -170,7 +175,7 @@ export async function generateAudit(answers: WizardAnswers): Promise<AuditResult
   return generateObject<AuditResult>({
     schemaName: 'audit',
     schema: AUDIT_SCHEMA as unknown as Record<string, unknown>,
-    maxTokens: 6000,
+    maxTokens: 9000,
     user: `A local service business owner just completed our 7-question audit. Their answers:
 
 ${answersToText(answers)}

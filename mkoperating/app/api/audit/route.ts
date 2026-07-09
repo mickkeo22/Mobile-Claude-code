@@ -18,6 +18,7 @@ import {
   updateLead,
 } from '@/lib/db';
 import { pushLeadToGhl } from '@/lib/ghl';
+import { sendAuditReportEmail } from '@/lib/audit-email';
 import { isValidEmail } from '@/lib/wizard';
 import type { Lead, WizardAnswers } from '@/lib/types';
 
@@ -106,6 +107,16 @@ export async function POST(req: NextRequest) {
       await pushLeadToGhl(lead, { attempts: 2 });
     } catch (e) {
       console.error('[mk:ghl] unexpected push error (funnel continues):', e);
+    }
+  }
+
+  // 4) Email the lead their report (approved template; skips gracefully
+  //    until Resend + AUDIT_EMAIL_FROM are configured).
+  if (lead) {
+    try {
+      await sendAuditReportEmail(lead);
+    } catch (e) {
+      console.error('[mk:audit-email] unexpected send error (funnel continues):', e);
     }
   }
 

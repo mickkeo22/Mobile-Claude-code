@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
 import { SiteFooter, SiteHeader } from '@/components/site/SiteChrome';
-import { AuditResults } from '@/components/audit/AuditResults';
+import { AuditReport } from '@/components/audit/AuditReport';
 import { SAMPLE_AUDIT, SAMPLE_ANSWERS } from '@/lib/audit-content';
 
 export const metadata: Metadata = {
@@ -22,13 +22,22 @@ export default function SampleAuditPage() {
             This is what you actually get.
           </h1>
           <p className="mt-4 max-w-xl leading-relaxed text-ink/70">
-            Below is a complete example for a two-crew tree service —{' '}
+            Below is an example report for a two-crew tree service —{' '}
             <strong>{SAMPLE_ANSWERS.business_name}</strong> — built from the same seven questions
-            you&apos;d answer. Names changed; the leaks are the ones we see every week.
+            you&apos;d answer. Names changed; the leaks are the ones we see every week. Yours goes
+            deeper: every fix is written from your actual answers, and it lands in your inbox too.
           </p>
 
           <div className="mt-8">
-            <AuditResults audit={SAMPLE_AUDIT} showBooking={false} compact />
+            <AuditReport
+              audit={SAMPLE_AUDIT}
+              businessName={SAMPLE_ANSWERS.business_name}
+              firstName={SAMPLE_ANSWERS.first_name}
+              answers={SAMPLE_ANSWERS}
+              showBooking={false}
+              navTop="top-16"
+              sampleNote
+            />
           </div>
 
           <div className="mt-10 rounded-2xl bg-ink p-7 text-paper sm:p-10">

@@ -64,7 +64,16 @@
   }
 }
 
-/* Print styles for proposals (PDF export = browser print) */
+@layer utilities {
+  .scrollbar-hide {
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Print styles for proposals + audit reports (PDF export = browser print) */
 @media print {
   .no-print {
     display: none !important;
@@ -77,6 +86,17 @@
     border: none !important;
     margin: 0 !important;
     max-width: none !important;
+  }
+  /* Audit report: print with every recommendation expanded */
+  .report-rec-body {
+    display: block !important;
+  }
+  .report-rec {
+    break-inside: avoid;
+  }
+  .report-cover {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   @page {
     margin: 14mm;
