@@ -56,7 +56,11 @@ export async function runAudit(rawInput: string): Promise<AuditResult> {
     safeFetch(`https://${domain}/sitemap.xml`, HUMAN_UA, 7_000),
   ])
 
-  const robotsFound = robotsRes.ok && robotsRes.status === 200 && !isSoft404(robotsRes, true)
+  // A file containing directives is a real robots.txt regardless of how the
+  // server labelled it, so that signal wins over the generic soft-404 check.
+  const robotsLooksReal = /^\s*(user-agent|sitemap|allow|disallow)\s*:/im.test(robotsRes.body)
+  const robotsFound =
+    robotsRes.ok && robotsRes.status === 200 && (robotsLooksReal || !isSoft404(robotsRes, true))
   const robotsBody = robotsFound ? robotsRes.body : ''
   const parsed: ParsedRobots | null = robotsFound ? parseRobots(robotsBody) : null
 

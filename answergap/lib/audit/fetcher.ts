@@ -157,9 +157,10 @@ export function isSoft404(outcome: FetchOutcome, expectPlainText: boolean): bool
   if (!outcome.ok || outcome.status !== 200) return true
   const body = outcome.body.trim()
   if (!body) return true
-  const ct = (outcome.headers['content-type'] || '').toLowerCase()
   if (expectPlainText) {
-    if (ct.includes('text/html')) return true
+    // Judge by the body, not the Content-Type header. Plenty of hosts label a
+    // perfectly good text file as text/html, and rejecting on the header alone
+    // reports a file that exists as missing.
     if (/^\s*<(!doctype|html|\?xml)/i.test(body)) return true
     if (/<\/(html|body)>/i.test(body)) return true
   }
